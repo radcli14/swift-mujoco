@@ -28,6 +28,15 @@ You can add MuJoCo for Swift in your project from here:
 .package(name: "MuJoCo", url: "https://github.com/liuliu/swift-mujoco.git", from: "2.3.0")
 ```
 
+To install from fork created by `radcli14`, and inside an XCode project, such as an iOS app, you can change the url to `https://github.com/radcli14/swift-mujoco.git`, as in the image below.
+
+<img width="1032" height="639" alt="image" src="https://github.com/user-attachments/assets/77270632-a4a0-42f5-bc60-cf07b7aba570" />
+
+When prompted to choose package products, you should only select MuJoCo to add to your target.
+
+<img width="656" height="301" alt="image" src="https://github.com/user-attachments/assets/6045d2da-dab9-4765-a775-287219d23f38" />
+
+
 ### Install with Bazel
 
 You can simply add MuJoCo for Swift as a dependency in `WORKSPACE`:
