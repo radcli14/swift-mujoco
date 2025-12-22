@@ -24,11 +24,13 @@ let package = Package(
   ],
   dependencies: dependencies,
   targets: [
-    .systemLibrary(
-      name: "C_glfw",
-      pkgConfig: "glfw3",
-      providers: [.brew(["glfw"]), .apt(["libglfw3-dev"])]
-    ),
+    // GLFW is disabled in radcli14's fork - not needed for core MuJoCo physics simulation
+    // Only required if you want GLContext or Simulate UI features
+    // .systemLibrary(
+    //   name: "C_glfw",
+    //   pkgConfig: "glfw3",
+    //   providers: [.brew(["glfw"]), .apt(["libglfw3-dev"])]
+    // ),
     .target(
       name: "CShim_mujoco",
       dependencies: ["C_mujoco"],
@@ -41,7 +43,8 @@ let package = Package(
       name: "MuJoCo",
       dependencies: [
         "CShim_mujoco", "C_mujoco",
-        .target(name: "C_glfw", condition: .when(platforms: [.macOS, .linux])),
+        // GLFW dependency removed  in radcli14's fork - not needed for physics simulation
+        // .target(name: "C_glfw", condition: .when(platforms: [.macOS, .linux])),
       ],
       path: "Sources",
       exclude: ["CShim", "C_glfw", "codegen", "BUILD.bazel"]),
