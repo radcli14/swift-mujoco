@@ -1,0 +1,44 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swift-mujoco}",
+            "name": "Debug simulate",
+            "target": "simulate",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug simulate"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swift-mujoco}",
+            "name": "Release simulate",
+            "target": "simulate",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release simulate"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swift-mujoco}",
+            "name": "Debug codegen",
+            "target": "codegen",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug codegen"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swift-mujoco}",
+            "name": "Release codegen",
+            "target": "codegen",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release codegen"
+        }
+    ]
+}
