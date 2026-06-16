@@ -46,7 +46,7 @@ extension MjModel {
   public func resetDataDebug(data: inout MjData, debugValue: UInt8) {
     mj_resetDataDebug(self._model, data._data, debugValue)
   }
-  ///  Reset data, set fields from specified keyframe.
+  ///  Reset data. If 0 <= key < nkey, set fields from specified keyframe.
   @inlinable
   public func reset(data: inout MjData, keyframe: Int32) {
     mj_resetDataKeyframe(self._model, data._data, keyframe)
@@ -66,15 +66,20 @@ extension MjModel {
   public func printModel(filename: String) {
     mj_printModel(self._model, filename)
   }
-  /// Print mjData to text file, specifying format. float_format must be a valid printf-style format string for a single float value
+  /// Print mjData to text file, specifying format. float_format must be a valid printf-style format string for a single float value.
   @inlinable
-  public func printFormatted(data: inout MjData, filename: String, floatFormat: String) {
+  public func printFormatted(data: MjData, filename: String, floatFormat: String) {
     mj_printFormattedData(self._model, data._data, filename, floatFormat)
   }
   ///  Print data to text file.
   @inlinable
-  public func print(data: inout MjData, filename: String) {
+  public func print(data: MjData, filename: String) {
     mj_printData(self._model, data._data, filename)
+  }
+  ///  Run all kinematics-like computations (kinematics, comPos, camlight, flex, tendon).
+  @inlinable
+  public func fwdKinematics(data: inout MjData) {
+    mj_fwdKinematics(self._model, data._data)
   }
   ///  Run position-dependent computations.
   @inlinable
@@ -91,7 +96,7 @@ extension MjModel {
   public func fwdActuation(data: inout MjData) {
     mj_fwdActuation(self._model, data._data)
   }
-  ///  Add up all non-constraint forces, compute qacc_unc.
+  ///  Add up all non-constraint forces, compute qacc_smooth.
   @inlinable
   public func fwdAcceleration(data: inout MjData) {
     mj_fwdAcceleration(self._model, data._data)
@@ -110,6 +115,11 @@ extension MjModel {
   @inlinable
   public func RungeKutta(data: inout MjData, n: Int32) {
     mj_RungeKutta(self._model, data._data, n)
+  }
+  ///  Implicit-in-velocity integrators.
+  @inlinable
+  public func implicit(data: inout MjData) {
+    mj_implicit(self._model, data._data)
   }
   ///  Run position-dependent computations in inverse dynamics.
   @inlinable
@@ -186,6 +196,11 @@ extension MjModel {
   public func camlight(data: inout MjData) {
     mj_camlight(self._model, data._data)
   }
+  ///  Compute flex-related quantities.
+  @inlinable
+  public func flex(data: inout MjData) {
+    mj_flex(self._model, data._data)
+  }
   ///  Compute tendon lengths, velocities and moment arms.
   @inlinable
   public func tendon(data: inout MjData) {
@@ -201,6 +216,11 @@ extension MjModel {
   public func crb(data: inout MjData) {
     mj_crb(self._model, data._data)
   }
+  ///  Make inertia matrix.
+  @inlinable
+  public func makeM(data: inout MjData) {
+    mj_makeM(self._model, data._data)
+  }
   ///  Compute sparse L'*D*L factorizaton of inertia matrix.
   @inlinable
   public func factorM(data: inout MjData) {
@@ -208,9 +228,7 @@ extension MjModel {
   }
   ///  Solve linear system M * x = y using factorization:  x = inv(L'*D*L)*y
   @inlinable
-  public func solveM<T0: MjDoubleMutableBufferPointer>(
-    data: inout MjData, x: inout T0, y: MjDoubleBufferPointer, n: Int32
-  ) {
+  public func solveM<T0: MjDoubleMutableBufferPointer>(data: inout MjData, x: inout T0, y: MjDoubleBufferPointer, n: Int32) {
     x.withUnsafeMutableBufferPointer { x__p in
       y.withUnsafeBufferPointer { y__p in
         mj_solveM(self._model, data._data, x__p.baseAddress, y__p.baseAddress, n)
@@ -219,12 +237,12 @@ extension MjModel {
   }
   ///  Half of linear solve:  x = sqrt(inv(D))*inv(L')*y
   @inlinable
-  public func solveM2<T0: MjDoubleMutableBufferPointer>(
-    data: inout MjData, x: inout T0, y: MjDoubleBufferPointer, n: Int32
-  ) {
+  public func solveM2<T0: MjDoubleMutableBufferPointer>(data: inout MjData, x: inout T0, y: MjDoubleBufferPointer, sqrtInvD: MjDoubleBufferPointer, n: Int32) {
     x.withUnsafeMutableBufferPointer { x__p in
       y.withUnsafeBufferPointer { y__p in
-        mj_solveM2(self._model, data._data, x__p.baseAddress, y__p.baseAddress, n)
+        sqrtInvD.withUnsafeBufferPointer { sqrtInvD__p in
+          mj_solveM2(self._model, data._data, x__p.baseAddress, y__p.baseAddress, sqrtInvD__p.baseAddress, n)
+        }
       }
     }
   }
@@ -233,21 +251,19 @@ extension MjModel {
   public func comVel(data: inout MjData) {
     mj_comVel(self._model, data._data)
   }
-  ///  Compute qfrc_passive from spring-dampers, viscosity and density.
+  ///  Compute qfrc_passive from spring-dampers, gravity compensation and fluid forces.
   @inlinable
   public func passive(data: inout MjData) {
     mj_passive(self._model, data._data)
   }
-  ///  subtree linear velocity and angular momentum
+  ///  Sub-tree linear velocity and angular momentum: compute subtree_linvel, subtree_angmom.
   @inlinable
   public func subtreeVel(data: inout MjData) {
     mj_subtreeVel(self._model, data._data)
   }
   ///  RNE: compute M(qpos)*qacc + C(qpos,qvel); flg_acc=0 removes inertial term.
   @inlinable
-  public func rne<T0: MjDoubleMutableBufferPointer>(
-    data: inout MjData, flgAcc: Int32, result: inout T0
-  ) {
+  public func rne<T0: MjDoubleMutableBufferPointer>(data: inout MjData, flgAcc: Int32, result: inout T0) {
     result.withUnsafeMutableBufferPointer { result__p in
       mj_rne(self._model, data._data, flgAcc, result__p.baseAddress)
     }
@@ -256,6 +272,11 @@ extension MjModel {
   @inlinable
   public func rnePostConstraint(data: inout MjData) {
     mj_rnePostConstraint(self._model, data._data)
+  }
+  /// Return the maximum number of contacts that can be generated between two geoms. If has_margin is -1, then the margin is pulled from the model, otherwise if has_margin > 0 indicates that the geoms have a positive margin.
+  @inlinable
+  public func maxContact(g1: Int32, g2: Int32, hasMargin: Int32) -> Int32 {
+    return mj_maxContact(self._model, g1, g2, hasMargin)
   }
   ///  Run collision detection.
   @inlinable
@@ -267,7 +288,12 @@ extension MjModel {
   public func makeConstraint(data: inout MjData) {
     mj_makeConstraint(self._model, data._data)
   }
-  ///  Compute inverse constaint inertia efc_AR.
+  ///  Find constraint islands.
+  @inlinable
+  public func island(data: inout MjData) {
+    mj_island(self._model, data._data)
+  }
+  ///  Compute inverse constraint inertia efc_AR.
   @inlinable
   public func projectConstraint(data: inout MjData) {
     mj_projectConstraint(self._model, data._data)
@@ -277,18 +303,76 @@ extension MjModel {
   public func referenceConstraint(data: inout MjData) {
     mj_referenceConstraint(self._model, data._data)
   }
-  /// Compute efc_state, efc_force, qfrc_constraint, and (optionally) cone Hessians. If cost is not NULL, set *cost = s(jar) where jar = Jac*qacc-aref.
+  /// Compute efc_state, efc_force, qfrc_constraint, and (optionally) cone Hessians. If cost is not NULL, set *cost = s(jar) where jar = Jac*qacc-aref. Nullable: cost
   @inlinable
-  public func constraintUpdate<T0: MjDoubleMutableBufferPointer>(
-    data: inout MjData, jar: MjDoubleBufferPointer, cost: inout T0, flgConeHessian: Int32
-  ) {
+  public func constraintUpdate<T0: MjDoubleMutableBufferPointer>(data: inout MjData, jar: MjDoubleBufferPointer, cost: inout T0, flgConeHessian: Int32) {
     jar.withUnsafeBufferPointer { jar__p in
       precondition(cost.count == 1)
       cost.withUnsafeMutableBufferPointer { cost__p in
-        mj_constraintUpdate(
-          self._model, data._data, jar__p.baseAddress, cost__p.baseAddress, flgConeHessian)
+        mj_constraintUpdate(self._model, data._data, jar__p.baseAddress, cost__p.baseAddress, flgConeHessian)
       }
     }
+  }
+  ///  Return size of state signature.
+  @inlinable
+  public func stateSize(sig: Int32) -> Int32 {
+    return mj_stateSize(self._model, sig)
+  }
+  ///  Get state.
+  @inlinable
+  public func getState<T0: MjDoubleMutableBufferPointer>(data: MjData, state: inout T0, sig: Int32) {
+    state.withUnsafeMutableBufferPointer { state__p in
+      mj_getState(self._model, data._data, state__p.baseAddress, sig)
+    }
+  }
+  ///  Extract a subset of components from a state previously obtained via mj_getState.
+  @inlinable
+  public func extractState<T0: MjDoubleMutableBufferPointer>(src: MjDoubleBufferPointer, srcsig: Int32, dst: inout T0, dstsig: Int32) {
+    src.withUnsafeBufferPointer { src__p in
+      dst.withUnsafeMutableBufferPointer { dst__p in
+        mj_extractState(self._model, src__p.baseAddress, srcsig, dst__p.baseAddress, dstsig)
+      }
+    }
+  }
+  ///  Set state.
+  @inlinable
+  public func setState(data: inout MjData, state: MjDoubleBufferPointer, sig: Int32) {
+    state.withUnsafeBufferPointer { state__p in
+      mj_setState(self._model, data._data, state__p.baseAddress, sig)
+    }
+  }
+  ///  Copy state from src to dst.
+  @inlinable
+  public func copyState(src: MjData, dst: inout MjData, sig: Int32) {
+    mj_copyState(self._model, src._data, dst._data, sig)
+  }
+  /// Read ctrl value for actuator at given time. Returns d->ctrl[id] if no history, otherwise reads from history buffer. interp: 0=zero-order-hold, 1=linear, 2=cubic spline.
+  @inlinable
+  public func readCtrl(data: MjData, id: Int32, time: Double, interp: Int32) -> Double {
+    return mj_readCtrl(self._model, data._data, id, time, interp)
+  }
+  /// Initialize history buffer for actuator; if times is NULL, uses existing buffer timestamps. Nullable: times
+  @inlinable
+  public func initCtrlHistory(data: inout MjData, id: Int32, times: MjDoubleBufferPointer, values: MjDoubleBufferPointer) {
+    times.withUnsafeBufferPointer { times__p in
+      values.withUnsafeBufferPointer { values__p in
+        mj_initCtrlHistory(self._model, data._data, id, times__p.baseAddress, values__p.baseAddress)
+      }
+    }
+  }
+  /// Initialize history buffer for sensor; if times is NULL, uses existing buffer timestamps. phase sets the user slot (last computation time for interval sensors). Nullable: times
+  @inlinable
+  public func initSensorHistory(data: inout MjData, id: Int32, times: MjDoubleBufferPointer, values: MjDoubleBufferPointer, phase: Double) {
+    times.withUnsafeBufferPointer { times__p in
+      values.withUnsafeBufferPointer { values__p in
+        mj_initSensorHistory(self._model, data._data, id, times__p.baseAddress, values__p.baseAddress, phase)
+      }
+    }
+  }
+  ///  Copy current state to the k-th model keyframe.
+  @inlinable
+  public mutating func setKeyframe(data: MjData, k: Int32) {
+    mj_setKeyframe(self._model, data._data, k)
   }
   ///  Add contact to d->contact list; return 0 if success; 1 if buffer full.
   @inlinable
@@ -313,9 +397,7 @@ extension MjModel {
   }
   ///  Multiply dense or sparse constraint Jacobian by vector.
   @inlinable
-  public func mulJacVec<T0: MjDoubleMutableBufferPointer>(
-    data: inout MjData, res: inout T0, vec: MjDoubleBufferPointer
-  ) {
+  public func mulJacVec<T0: MjDoubleMutableBufferPointer>(data: MjData, res: inout T0, vec: MjDoubleBufferPointer) {
     res.withUnsafeMutableBufferPointer { res__p in
       vec.withUnsafeBufferPointer { vec__p in
         mj_mulJacVec(self._model, data._data, res__p.baseAddress, vec__p.baseAddress)
@@ -324,47 +406,37 @@ extension MjModel {
   }
   ///  Multiply dense or sparse constraint Jacobian transpose by vector.
   @inlinable
-  public func mulJacTVec<T0: MjDoubleMutableBufferPointer>(
-    data: inout MjData, res: inout T0, vec: MjDoubleBufferPointer
-  ) {
+  public func mulJacTVec<T0: MjDoubleMutableBufferPointer>(data: MjData, res: inout T0, vec: MjDoubleBufferPointer) {
     res.withUnsafeMutableBufferPointer { res__p in
       vec.withUnsafeBufferPointer { vec__p in
         mj_mulJacTVec(self._model, data._data, res__p.baseAddress, vec__p.baseAddress)
       }
     }
   }
-  ///  Compute 3/6-by-nv end-effector Jacobian of global point attached to given body.
+  /// Compute 3/6-by-nv end-effector Jacobian of global point attached to given body. Nullable: jacp, jacr
   @inlinable
-  public func jac<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(
-    data: MjData, jacp: inout T0, jacr: inout T1, point: MjDoubleBufferPointer, body: Int32
-  ) {
+  public func jac<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(data: MjData, jacp: inout T0, jacr: inout T1, point: MjDoubleBufferPointer, body: Int32) {
     jacp.withUnsafeMutableBufferPointer { jacp__p in
       jacr.withUnsafeMutableBufferPointer { jacr__p in
         precondition(point.count == 3)
         point.withUnsafeBufferPointer { point__p in
-          mj_jac(
-            self._model, data._data, jacp__p.baseAddress, jacr__p.baseAddress, point__p.baseAddress,
-            body)
+          mj_jac(self._model, data._data, jacp__p.baseAddress, jacr__p.baseAddress, point__p.baseAddress, body)
         }
       }
     }
   }
-  ///  Compute body frame end-effector Jacobian.
+  /// Compute body frame end-effector Jacobian. Nullable: jacp, jacr
   @inlinable
-  public func jacBody<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(
-    data: MjData, jacp: inout T0, jacr: inout T1, body: Int32
-  ) {
+  public func jacBody<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(data: MjData, jacp: inout T0, jacr: inout T1, body: Int32) {
     jacp.withUnsafeMutableBufferPointer { jacp__p in
       jacr.withUnsafeMutableBufferPointer { jacr__p in
         mj_jacBody(self._model, data._data, jacp__p.baseAddress, jacr__p.baseAddress, body)
       }
     }
   }
-  ///  Compute body center-of-mass end-effector Jacobian.
+  /// Compute body center-of-mass end-effector Jacobian. Nullable: jacp, jacr
   @inlinable
-  public func jacBodyCom<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(
-    data: MjData, jacp: inout T0, jacr: inout T1, body: Int32
-  ) {
+  public func jacBodyCom<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(data: MjData, jacp: inout T0, jacr: inout T1, body: Int32) {
     jacp.withUnsafeMutableBufferPointer { jacp__p in
       jacr.withUnsafeMutableBufferPointer { jacr__p in
         mj_jacBodyCom(self._model, data._data, jacp__p.baseAddress, jacr__p.baseAddress, body)
@@ -373,64 +445,72 @@ extension MjModel {
   }
   ///  Compute subtree center-of-mass end-effector Jacobian.
   @inlinable
-  public func jacSubtreeCom<T0: MjDoubleMutableBufferPointer>(
-    data: inout MjData, jacp: inout T0, body: Int32
-  ) {
+  public func jacSubtreeCom<T0: MjDoubleMutableBufferPointer>(data: inout MjData, jacp: inout T0, body: Int32) {
     jacp.withUnsafeMutableBufferPointer { jacp__p in
       mj_jacSubtreeCom(self._model, data._data, jacp__p.baseAddress, body)
     }
   }
-  ///  Compute geom end-effector Jacobian.
+  /// Compute geom end-effector Jacobian. Nullable: jacp, jacr
   @inlinable
-  public func jacGeom<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(
-    data: MjData, jacp: inout T0, jacr: inout T1, geom: Int32
-  ) {
+  public func jacGeom<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(data: MjData, jacp: inout T0, jacr: inout T1, geom: Int32) {
     jacp.withUnsafeMutableBufferPointer { jacp__p in
       jacr.withUnsafeMutableBufferPointer { jacr__p in
         mj_jacGeom(self._model, data._data, jacp__p.baseAddress, jacr__p.baseAddress, geom)
       }
     }
   }
-  ///  Compute site end-effector Jacobian.
+  /// Compute site end-effector Jacobian. Nullable: jacp, jacr
   @inlinable
-  public func jacSite<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(
-    data: MjData, jacp: inout T0, jacr: inout T1, site: Int32
-  ) {
+  public func jacSite<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(data: MjData, jacp: inout T0, jacr: inout T1, site: Int32) {
     jacp.withUnsafeMutableBufferPointer { jacp__p in
       jacr.withUnsafeMutableBufferPointer { jacr__p in
         mj_jacSite(self._model, data._data, jacp__p.baseAddress, jacr__p.baseAddress, site)
       }
     }
   }
-  ///  Compute translation end-effector Jacobian of point, and rotation Jacobian of axis.
+  /// Compute translation end-effector Jacobian of point, and rotation Jacobian of axis. Nullable: jacPoint, jacAxis
   @inlinable
-  public func jacPointAxis<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(
-    data: inout MjData, jacPoint: inout T0, jacAxis: inout T1, point: MjDoubleBufferPointer,
-    axis: MjDoubleBufferPointer, body: Int32
-  ) {
+  public func jacPointAxis<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(data: inout MjData, jacPoint: inout T0, jacAxis: inout T1, point: MjDoubleBufferPointer, axis: MjDoubleBufferPointer, body: Int32) {
     jacPoint.withUnsafeMutableBufferPointer { jacPoint__p in
       jacAxis.withUnsafeMutableBufferPointer { jacAxis__p in
         precondition(point.count == 3)
         point.withUnsafeBufferPointer { point__p in
           precondition(axis.count == 3)
           axis.withUnsafeBufferPointer { axis__p in
-            mj_jacPointAxis(
-              self._model, data._data, jacPoint__p.baseAddress, jacAxis__p.baseAddress,
-              point__p.baseAddress, axis__p.baseAddress, body)
+            mj_jacPointAxis(self._model, data._data, jacPoint__p.baseAddress, jacAxis__p.baseAddress, point__p.baseAddress, axis__p.baseAddress, body)
           }
         }
       }
     }
   }
-  ///  Get id of object with specified name, return -1 if not found; type is mjtObj.
+  /// Compute 3/6-by-nv Jacobian time derivative of global point attached to given body. Nullable: jacp, jacr
   @inlinable
-  public func name2id(type: MjtObj, name: String) -> Int32 {
-    return mj_name2id(self._model, type.rawValue, name)
+  public func jacDot<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(data: MjData, jacp: inout T0, jacr: inout T1, point: MjDoubleBufferPointer, body: Int32) {
+    jacp.withUnsafeMutableBufferPointer { jacp__p in
+      jacr.withUnsafeMutableBufferPointer { jacr__p in
+        precondition(point.count == 3)
+        point.withUnsafeBufferPointer { point__p in
+          mj_jacDot(self._model, data._data, jacp__p.baseAddress, jacr__p.baseAddress, point__p.baseAddress, body)
+        }
+      }
+    }
   }
-  ///  Get name of object with specified id, return 0 if invalid type or id; type is mjtObj.
+  ///  Compute subtree angular momentum matrix.
   @inlinable
-  public func id2name(type: MjtObj, id: Int32) -> String? {
-    return String(cString: mj_id2name(self._model, type.rawValue, id), encoding: .utf8)
+  public func angmomMat<T0: MjDoubleMutableBufferPointer>(data: inout MjData, mat: inout T0, body: Int32) {
+    mat.withUnsafeMutableBufferPointer { mat__p in
+      mj_angmomMat(self._model, data._data, mat__p.baseAddress, body)
+    }
+  }
+  ///  Get id of object with the specified mjtObj type and name; return -1 if id not found.
+  @inlinable
+  public func name2id(type: Int32, name: String) -> Int32 {
+    return mj_name2id(self._model, type, name)
+  }
+  ///  Get name of object with the specified mjtObj type and id; return NULL if name not found.
+  @inlinable
+  public func id2name(type: Int32, id: Int32) -> String? {
+    return String(cString: mj_id2name(self._model, type, id), encoding: .utf8)
   }
   ///  Convert sparse inertia matrix M into full (i.e. dense) matrix.
   @inlinable
@@ -443,9 +523,7 @@ extension MjModel {
   }
   ///  Multiply vector by inertia matrix.
   @inlinable
-  public func mulM<T0: MjDoubleMutableBufferPointer>(
-    data: MjData, res: inout T0, vec: MjDoubleBufferPointer
-  ) {
+  public func mulM<T0: MjDoubleMutableBufferPointer>(data: MjData, res: inout T0, vec: MjDoubleBufferPointer) {
     res.withUnsafeMutableBufferPointer { res__p in
       vec.withUnsafeBufferPointer { vec__p in
         mj_mulM(self._model, data._data, res__p.baseAddress, vec__p.baseAddress)
@@ -454,39 +532,29 @@ extension MjModel {
   }
   ///  Multiply vector by (inertia matrix)^(1/2).
   @inlinable
-  public func mulM2<T0: MjDoubleMutableBufferPointer>(
-    data: MjData, res: inout T0, vec: MjDoubleBufferPointer
-  ) {
+  public func mulM2<T0: MjDoubleMutableBufferPointer>(data: MjData, res: inout T0, vec: MjDoubleBufferPointer) {
     res.withUnsafeMutableBufferPointer { res__p in
       vec.withUnsafeBufferPointer { vec__p in
         mj_mulM2(self._model, data._data, res__p.baseAddress, vec__p.baseAddress)
       }
     }
   }
-  /// Add inertia matrix to destination matrix. Destination can be sparse uncompressed, or dense when all int* are NULL
+  /// Add inertia matrix to destination matrix (lower triangle only). Destination can be sparse or dense when all int* are NULL. Nullable: rownnz, rowadr, colind
   @inlinable
-  public func addM<
-    T0: MjDoubleMutableBufferPointer, T1: MjInt32MutableBufferPointer,
-    T2: MjInt32MutableBufferPointer, T3: MjInt32MutableBufferPointer
-  >(data: inout MjData, dst: inout T0, rownnz: inout T1, rowadr: inout T2, colind: inout T3) {
+  public func addM<T0: MjDoubleMutableBufferPointer, T1: MjInt32MutableBufferPointer, T2: MjInt32MutableBufferPointer, T3: MjInt32MutableBufferPointer>(data: inout MjData, dst: inout T0, rownnz: inout T1, rowadr: inout T2, colind: inout T3) {
     dst.withUnsafeMutableBufferPointer { dst__p in
       rownnz.withUnsafeMutableBufferPointer { rownnz__p in
         rowadr.withUnsafeMutableBufferPointer { rowadr__p in
           colind.withUnsafeMutableBufferPointer { colind__p in
-            mj_addM(
-              self._model, data._data, dst__p.baseAddress, rownnz__p.baseAddress,
-              rowadr__p.baseAddress, colind__p.baseAddress)
+            mj_addM(self._model, data._data, dst__p.baseAddress, rownnz__p.baseAddress, rowadr__p.baseAddress, colind__p.baseAddress)
           }
         }
       }
     }
   }
-  ///  Apply cartesian force and torque (outside xfrc_applied mechanism).
+  /// Apply Cartesian force and torque (outside xfrc_applied mechanism). Nullable: force, torque
   @inlinable
-  public func applyFT<T0: MjDoubleMutableBufferPointer>(
-    data: inout MjData, force: MjDoubleBufferPointer, torque: MjDoubleBufferPointer,
-    point: MjDoubleBufferPointer, body: Int32, qfrcTarget: inout T0
-  ) {
+  public func applyFT<T0: MjDoubleMutableBufferPointer>(data: inout MjData, force: MjDoubleBufferPointer, torque: MjDoubleBufferPointer, point: MjDoubleBufferPointer, body: Int32, qfrcTarget: inout T0) {
     precondition(force.count == 3)
     force.withUnsafeBufferPointer { force__p in
       precondition(torque.count == 3)
@@ -494,39 +562,39 @@ extension MjModel {
         precondition(point.count == 3)
         point.withUnsafeBufferPointer { point__p in
           qfrcTarget.withUnsafeMutableBufferPointer { qfrcTarget__p in
-            mj_applyFT(
-              self._model, data._data, force__p.baseAddress, torque__p.baseAddress,
-              point__p.baseAddress, body, qfrcTarget__p.baseAddress)
+            mj_applyFT(self._model, data._data, force__p.baseAddress, torque__p.baseAddress, point__p.baseAddress, body, qfrcTarget__p.baseAddress)
           }
         }
       }
     }
   }
-  ///  Compute object 6D velocity in object-centered frame, world/local orientation.
+  ///  Compute object 6D velocity (rot:lin) in object-centered frame, world/local orientation.
   @inlinable
-  public func objectVelocity<T0: MjDoubleMutableBufferPointer>(
-    data: MjData, objtype: Int32, objid: Int32, res: inout T0, flgLocal: Int32
-  ) {
+  public func objectVelocity<T0: MjDoubleMutableBufferPointer>(data: MjData, objtype: Int32, objid: Int32, res: inout T0, flgLocal: Int32) {
     precondition(res.count == 6)
     res.withUnsafeMutableBufferPointer { res__p in
       mj_objectVelocity(self._model, data._data, objtype, objid, res__p.baseAddress, flgLocal)
     }
   }
-  ///  Compute object 6D acceleration in object-centered frame, world/local orientation.
+  ///  Compute object 6D acceleration (rot:lin) in object-centered frame, world/local orientation.
   @inlinable
-  public func objectAcceleration<T0: MjDoubleMutableBufferPointer>(
-    data: MjData, objtype: Int32, objid: Int32, res: inout T0, flgLocal: Int32
-  ) {
+  public func objectAcceleration<T0: MjDoubleMutableBufferPointer>(data: MjData, objtype: Int32, objid: Int32, res: inout T0, flgLocal: Int32) {
     precondition(res.count == 6)
     res.withUnsafeMutableBufferPointer { res__p in
       mj_objectAcceleration(self._model, data._data, objtype, objid, res__p.baseAddress, flgLocal)
     }
   }
+  /// Return smallest signed distance between two geoms and optionally segment from geom1 to geom2. Nullable: fromto
+  @inlinable
+  public func geomDistance<T0: MjDoubleMutableBufferPointer>(data: inout MjData, geom1: Int32, geom2: Int32, distmax: Double, fromto: inout T0) -> Double {
+    precondition(fromto.count == 6)
+    return fromto.withUnsafeMutableBufferPointer { fromto__p in
+      return mj_geomDistance(self._model, data._data, geom1, geom2, distmax, fromto__p.baseAddress)
+    }
+  }
   ///  Extract 6D force:torque given contact id, in the contact frame.
   @inlinable
-  public func contactForce<T0: MjDoubleMutableBufferPointer>(
-    data: MjData, id: Int32, result: inout T0
-  ) {
+  public func contactForce<T0: MjDoubleMutableBufferPointer>(data: MjData, id: Int32, result: inout T0) {
     precondition(result.count == 6)
     result.withUnsafeMutableBufferPointer { result__p in
       mj_contactForce(self._model, data._data, id, result__p.baseAddress)
@@ -534,23 +602,18 @@ extension MjModel {
   }
   ///  Compute velocity by finite-differencing two positions.
   @inlinable
-  public func differentiatePos<T0: MjDoubleMutableBufferPointer>(
-    qvel: inout T0, dt: Double, qpos1: MjDoubleBufferPointer, qpos2: MjDoubleBufferPointer
-  ) {
+  public func differentiatePos<T0: MjDoubleMutableBufferPointer>(qvel: inout T0, dt: Double, qpos1: MjDoubleBufferPointer, qpos2: MjDoubleBufferPointer) {
     qvel.withUnsafeMutableBufferPointer { qvel__p in
       qpos1.withUnsafeBufferPointer { qpos1__p in
         qpos2.withUnsafeBufferPointer { qpos2__p in
-          mj_differentiatePos(
-            self._model, qvel__p.baseAddress, dt, qpos1__p.baseAddress, qpos2__p.baseAddress)
+          mj_differentiatePos(self._model, qvel__p.baseAddress, dt, qpos1__p.baseAddress, qpos2__p.baseAddress)
         }
       }
     }
   }
   ///  Integrate position with given velocity.
   @inlinable
-  public func integratePos<T0: MjDoubleMutableBufferPointer>(
-    qpos: inout T0, qvel: MjDoubleBufferPointer, dt: Double
-  ) {
+  public func integratePos<T0: MjDoubleMutableBufferPointer>(qpos: inout T0, qvel: MjDoubleBufferPointer, dt: Double) {
     qpos.withUnsafeMutableBufferPointer { qpos__p in
       qvel.withUnsafeBufferPointer { qvel__p in
         mj_integratePos(self._model, qpos__p.baseAddress, qvel__p.baseAddress, dt)
@@ -579,12 +642,9 @@ extension MjModel {
   public func getPluginConfig(pluginId: Int32, attrib: String) -> String? {
     return String(cString: mj_getPluginConfig(self._model, pluginId, attrib), encoding: .utf8)
   }
-  /// Intersect ray (pnt+x*vec, x>=0) with visible geoms, except geoms in bodyexclude. Return distance (x) to nearest surface, or -1 if no intersection and output geomid. geomgroup, flg_static are as in mjvOption; geomgroup==NULL skips group exclusion.
+  /// Intersect ray (pnt+x*vec, x>=0) with visible geoms, except geoms in bodyexclude. Return distance (x) to nearest surface, or -1 if no intersection. geomgroup, flg_static are as in mjvOption; geomgroup==NULL skips group exclusion. Nullable: geomgroup, geomid, normal
   @inlinable
-  public func ray<T0: MjInt32MutableBufferPointer>(
-    data: MjData, pnt: MjDoubleBufferPointer, vec: MjDoubleBufferPointer,
-    geomgroup: MjUInt8BufferPointer, flgStatic: UInt8, bodyexclude: Int32, geomid: inout T0
-  ) -> Double {
+  public func ray<T0: MjInt32MutableBufferPointer, T1: MjDoubleMutableBufferPointer>(data: MjData, pnt: MjDoubleBufferPointer, vec: MjDoubleBufferPointer, geomgroup: MjUInt8BufferPointer, flgStatic: Bool, bodyexclude: Int32, geomid: inout T0, normal: inout T1) -> Double {
     precondition(pnt.count == 3)
     return pnt.withUnsafeBufferPointer { pnt__p in
       precondition(vec.count == 3)
@@ -592,56 +652,91 @@ extension MjModel {
         return geomgroup.withUnsafeBufferPointer { geomgroup__p in
           precondition(geomid.count == 1)
           return geomid.withUnsafeMutableBufferPointer { geomid__p in
-            return mj_ray(
-              self._model, data._data, pnt__p.baseAddress, vec__p.baseAddress,
-              geomgroup__p.baseAddress, flgStatic, bodyexclude, geomid__p.baseAddress)
+            precondition(normal.count == 3)
+            return normal.withUnsafeMutableBufferPointer { normal__p in
+              return mj_ray(self._model, data._data, pnt__p.baseAddress, vec__p.baseAddress, geomgroup__p.baseAddress, flgStatic, bodyexclude, geomid__p.baseAddress, normal__p.baseAddress)
+            }
           }
         }
       }
     }
   }
-  ///  Interect ray with hfield, return nearest distance or -1 if no intersection.
+  /// Intersect multiple rays emanating from a single point, compute normals if given. Similar semantics to mj_ray, but vec, normal and dist are arrays. Geoms further than cutoff are ignored. Nullable: geomgroup, geomid, normal
   @inlinable
-  public func rayHfield(
-    data: MjData, geomid: Int32, pnt: MjDoubleBufferPointer, vec: MjDoubleBufferPointer
-  ) -> Double {
+  public func multiRay<T0: MjInt32MutableBufferPointer, T1: MjDoubleMutableBufferPointer, T2: MjDoubleMutableBufferPointer>(data: inout MjData, pnt: MjDoubleBufferPointer, vec: MjDoubleBufferPointer, geomgroup: MjUInt8BufferPointer, flgStatic: Bool, bodyexclude: Int32, geomid: inout T0, dist: inout T1, normal: inout T2, nray: Int32, cutoff: Double) {
+    precondition(pnt.count == 3)
+    pnt.withUnsafeBufferPointer { pnt__p in
+      vec.withUnsafeBufferPointer { vec__p in
+        geomgroup.withUnsafeBufferPointer { geomgroup__p in
+          geomid.withUnsafeMutableBufferPointer { geomid__p in
+            dist.withUnsafeMutableBufferPointer { dist__p in
+              normal.withUnsafeMutableBufferPointer { normal__p in
+                mj_multiRay(self._model, data._data, pnt__p.baseAddress, vec__p.baseAddress, geomgroup__p.baseAddress, flgStatic, bodyexclude, geomid__p.baseAddress, dist__p.baseAddress, normal__p.baseAddress, nray, cutoff)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  /// Intersect ray with hfield; return nearest distance or -1 if no intersection. Nullable: normal
+  @inlinable
+  public func rayHfield<T0: MjDoubleMutableBufferPointer>(data: MjData, geomid: Int32, pnt: MjDoubleBufferPointer, vec: MjDoubleBufferPointer, normal: inout T0) -> Double {
     precondition(pnt.count == 3)
     return pnt.withUnsafeBufferPointer { pnt__p in
       precondition(vec.count == 3)
       return vec.withUnsafeBufferPointer { vec__p in
-        return mj_rayHfield(self._model, data._data, geomid, pnt__p.baseAddress, vec__p.baseAddress)
+        precondition(normal.count == 3)
+        return normal.withUnsafeMutableBufferPointer { normal__p in
+          return mj_rayHfield(self._model, data._data, geomid, pnt__p.baseAddress, vec__p.baseAddress, normal__p.baseAddress)
+        }
       }
     }
   }
-  ///  Interect ray with mesh, return nearest distance or -1 if no intersection.
+  /// Intersect ray with mesh; return nearest distance or -1 if no intersection. Nullable: normal
   @inlinable
-  public func rayMesh(
-    data: MjData, geomid: Int32, pnt: MjDoubleBufferPointer, vec: MjDoubleBufferPointer
-  ) -> Double {
+  public func rayMesh<T0: MjDoubleMutableBufferPointer>(data: MjData, geomid: Int32, pnt: MjDoubleBufferPointer, vec: MjDoubleBufferPointer, normal: inout T0) -> Double {
     precondition(pnt.count == 3)
     return pnt.withUnsafeBufferPointer { pnt__p in
       precondition(vec.count == 3)
       return vec.withUnsafeBufferPointer { vec__p in
-        return mj_rayMesh(self._model, data._data, geomid, pnt__p.baseAddress, vec__p.baseAddress)
+        precondition(normal.count == 3)
+        return normal.withUnsafeMutableBufferPointer { normal__p in
+          return mj_rayMesh(self._model, data._data, geomid, pnt__p.baseAddress, vec__p.baseAddress, normal__p.baseAddress)
+        }
       }
     }
   }
-  /// Finite differenced transition matrices (control theory notation)   d(x_next) = A*dx + B*du   d(sensor) = C*dx + D*du   required output matrix dimensions:      A: (2*nv+na x 2*nv+na)      B: (2*nv+na x nu)      D: (nsensordata x 2*nv+na)      C: (nsensordata x nu)
+  /// Intersect ray with flex; return nearest distance or -1 if no intersection, and also output nearest vertex id and surface normal. Nullable: vertid, normal
   @inlinable
-  public func transitionFD<
-    T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer,
-    T2: MjDoubleMutableBufferPointer, T3: MjDoubleMutableBufferPointer
-  >(
-    data: inout MjData, eps: Double, centered: UInt8, a: inout T0, b: inout T1, c: inout T2,
-    d: inout T3
-  ) {
+  public func rayFlex<T0: MjInt32MutableBufferPointer, T1: MjDoubleMutableBufferPointer>(data: MjData, flexLayer: Int32, flgVert: Bool, flgEdge: Bool, flgFace: Bool, flgSkin: Bool, flexid: Int32, pnt: MjDoubleBufferPointer, vec: MjDoubleBufferPointer, vertid: inout T0, normal: inout T1) -> Double {
+    precondition(pnt.count == 3)
+    return pnt.withUnsafeBufferPointer { pnt__p in
+      precondition(vec.count == 3)
+      return vec.withUnsafeBufferPointer { vec__p in
+        precondition(vertid.count == 1)
+        return vertid.withUnsafeMutableBufferPointer { vertid__p in
+          precondition(normal.count == 3)
+          return normal.withUnsafeMutableBufferPointer { normal__p in
+            return mj_rayFlex(self._model, data._data, flexLayer, flgVert, flgEdge, flgFace, flgSkin, flexid, pnt__p.baseAddress, vec__p.baseAddress, vertid__p.baseAddress, normal__p.baseAddress)
+          }
+        }
+      }
+    }
+  }
+  /// Copy mjModel, skip large arrays not required for abstract visualization. Nullable: dest
+  @inlinable
+  public mutating func copyModel(src: MjModel) {
+    mjv_copyModel(self._model, src._model)
+  }
+  /// Finite differenced transition matrices (control theory notation)   d(x_next) = A*dx + B*du   d(sensor) = C*dx + D*du   required output matrix dimensions:      A: (2*nv+na x 2*nv+na)      B: (2*nv+na x nu)      D: (nsensordata x 2*nv+na)      C: (nsensordata x nu) Nullable: A, B, C, D
+  @inlinable
+  public func transitionFD<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer, T2: MjDoubleMutableBufferPointer, T3: MjDoubleMutableBufferPointer>(data: inout MjData, eps: Double, flgCentered: Bool, a: inout T0, b: inout T1, c: inout T2, d: inout T3) {
     a.withUnsafeMutableBufferPointer { a__p in
       b.withUnsafeMutableBufferPointer { b__p in
         c.withUnsafeMutableBufferPointer { c__p in
           d.withUnsafeMutableBufferPointer { d__p in
-            mjd_transitionFD(
-              self._model, data._data, eps, centered, a__p.baseAddress, b__p.baseAddress,
-              c__p.baseAddress, d__p.baseAddress)
+            mjd_transitionFD(self._model, data._data, eps, flgCentered, a__p.baseAddress, b__p.baseAddress, c__p.baseAddress, d__p.baseAddress)
           }
         }
       }

@@ -36,10 +36,16 @@ public struct Struct {
 
 let SwiftType: [String: String] = [
   "int": "Int32",
+  // mjtSize is int64_t in C, but MuJoCo dimension fields (nq, nv, nbody, ...) and the binding's
+  // MjArray length machinery are all Int32. We surface mjtSize as Int32 (with an explicit cast in
+  // the scalar accessors, see emission below) to preserve the pre-3.x Swift API.
+  "mjtSize": "Int32",
   "uintptr_t": "UInt",
+  "uint64_t": "UInt64",
   "size_t": "Int",
   "unsigned int": "UInt32",
   "bool": "Bool",
+  "mjtBool": "Bool",
   "mjtByte": "UInt8",
   "mjtNum": "Double",
   "char": "CChar",
@@ -138,7 +144,7 @@ func swiftFieldType(
   staticArrayAsDynamic: [String], definedConstants: [String: Int]
 ) -> SwiftFieldType {
   var primitiveType = ""
-  let commentType: String?
+  var commentType: String?
   if let comment = comment {
     if let range = comment.range(of: #"\(mjt\w+\)"#, options: .regularExpression) {
       // This is enum type, and we need to cast.
@@ -158,17 +164,34 @@ func swiftFieldType(
   } else {
     commentType = nil
   }
+  // MuJoCo enums are `int`-backed (4 bytes). Only honor an "(mjtXxx)" comment when the field's
+  // storage is actually `int`; for other storage (e.g. mjtByte arrays such as *_sameframe) keep
+  // the raw integer element type. This avoids both a stride/size mismatch and the occasional
+  // mis-cased enum name in MuJoCo's header comments (e.g. "(mjtSameframe)" vs enum mjtSameFrame).
+  if commentType != nil, case .plain(let tn) = fieldType {
+    let base = tn.hasSuffix("*") ? String(tn.dropLast()).trimmingCharacters(in: .whitespaces) : tn
+    if base != "int" { commentType = nil }
+  }
   switch fieldType {
   case .plain(let typeName):
     if typeName.hasSuffix("*") {
       let elTypeName = typeName.dropLast().trimmingCharacters(in: .whitespaces)
-      let elType = commentType ?? SwiftType[elTypeName]!
+      if commentType == nil && SwiftType[elTypeName] == nil {
+        FileHandle.standardError.write("UNMAPPED PTR TYPE: '\(elTypeName)' field '\(fieldName)' in \(structName)\n".data(using: .utf8)!)
+      }
+      // Scalar mjtSize is surfaced as Int32, but an mjtSize *array* (e.g. tex_adr) is a real
+      // int64 buffer, so its element type must stay Int64 to match the underlying storage.
+      let elType =
+        elTypeName == "mjtSize" ? "Int64" : (commentType ?? SwiftType[elTypeName] ?? "Void")
       if elType == "Void" {  // This is raw pointer, nothing to see.
         return .plain("UnsafeMutableRawPointer")
       }
       return .array(.plain(elType), nil, false)
     } else {
-      primitiveType = commentType ?? SwiftType[typeName]!
+      if commentType == nil && SwiftType[typeName] == nil {
+        FileHandle.standardError.write("UNMAPPED TYPE: '\(typeName)' field '\(fieldName)' in \(structName)\n".data(using: .utf8)!)
+      }
+      primitiveType = commentType ?? SwiftType[typeName] ?? "Int32"
     }
   case .product(_):
     let fieldName = cleanupFieldName(name: fieldName)
@@ -179,7 +202,10 @@ func swiftFieldType(
   // This is an static array.
   if let range = fieldName.range(of: #"\[\w+\]"#, options: .regularExpression) {
     let matched = fieldName[range].dropFirst().dropLast()
-    let count = Int(matched) ?? definedConstants[String(matched)]!
+    if Int(matched) == nil && definedConstants[String(matched)] == nil {
+      FileHandle.standardError.write("UNMAPPED ARRAY DIM: '\(matched)' field '\(fieldName)' in \(structName)\n".data(using: .utf8)!)
+    }
+    let count = Int(matched) ?? definedConstants[String(matched)] ?? 1
     let restOfField = String(fieldName.suffix(from: fieldName.firstIndex(where: { $0 == "]" })!))
     let secondaryCount: Int?
     if let secondRange = restOfField.range(of: #"\[\w+\]"#, options: .regularExpression) {
@@ -237,10 +263,20 @@ public func structExtension(
     guard let name = name else { continue }  // Handle sum type.
     let fieldName = cleanupFieldName(name: name)
     guard !denySet.contains(fieldName) else { continue }
+    // Checkpoint so we can safely skip a field whose array length we cannot determine from
+    // the header comment (rather than emit a wrong-length, memory-unsafe accessor).
+    let codeBeforeField = code
+    let fieldNamesCountBeforeField = fieldNames.count
     if let comment = comment {
       code += "  /// \(comment)\n"
     }
     code += "  @inlinable\n"
+    // A scalar field whose C type is mjtSize (int64_t) but which we surface as Int32 needs an
+    // explicit cast in its accessor (Swift will not implicitly convert Int64 <-> Int32).
+    let isScalarSizeField: Bool = {
+      if case .plain("mjtSize") = type { return true }
+      return false
+    }()
     let fieldType = swiftFieldType(
       structName: thisStruct.name, fieldName: name, fieldType: type, comment: comment,
       staticArrayAsDynamic: staticArrayAsDynamic, definedConstants: definedConstants)
@@ -263,7 +299,37 @@ public func structExtension(
           arrayCount = arrayCount?.replacingOccurrences(of: key, with: value)
         }
       }
-      let count = arrayCount!
+      // Dimension identifiers come from the header comment in snake_case (e.g. "nnames_map"), but
+      // the generated scalar accessors are camelCased ("nnamesMap"). Convert any snake_case
+      // identifier token so the reference in the array length resolves. (Uppercase C constants
+      // such as mjNTEXROLE contain no underscore here and are left untouched.)
+      if let ac = arrayCount, let re = try? NSRegularExpression(pattern: "[a-z][a-zA-Z0-9_]*") {
+        let ns = ac as NSString
+        var result = ""
+        var lastEnd = 0
+        for m in re.matches(in: ac, range: NSRange(location: 0, length: ns.length)) {
+          result += ns.substring(with: NSRange(location: lastEnd, length: m.range.location - lastEnd))
+          let tok = ns.substring(with: m.range)
+          if let constant = definedConstants[tok] {
+            // A compile-time constant dimension (e.g. the enum count mjNTEXROLE). The imported C
+            // symbol may be typed as the enum itself, so emit its integer literal instead.
+            result += "\(constant)"
+          } else {
+            result += tok.contains("_") ? tok.camelCase() : tok
+          }
+          lastEnd = m.range.location + m.range.length
+        }
+        result += ns.substring(from: lastEnd)
+        arrayCount = result
+      }
+      guard let count = arrayCount else {
+        FileHandle.standardError.write(
+          "SKIP FIELD (indeterminate array length): '\(fieldName)' in \(thisStruct.name)\n"
+            .data(using: .utf8)!)
+        code = codeBeforeField
+        while fieldNames.count > fieldNamesCountBeforeField { fieldNames.removeLast() }
+        continue
+      }
       if case .staticString(let strlen) = elType {
         precondition(staticArray)
         let ump =
@@ -356,6 +422,9 @@ public func structExtension(
       code += "        }\n"
       code += "      }\n"
       code += "    }\n"
+    } else if isScalarSizeField {
+      code += "    get { Int32(_\(varName)\(suffix).\(fieldName)) }\n"
+      code += "    set { _\(varName)\(suffix).\(fieldName) = Int64(newValue) }\n"
     } else {
       code += "    get { _\(varName)\(suffix).\(fieldName) }\n"
       code += "    set { _\(varName)\(suffix).\(fieldName) = newValue }\n"

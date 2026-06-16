@@ -104,7 +104,30 @@ let package = Package(
         // .target(name: "C_glfw", condition: .when(platforms: [.macOS, .linux])),
       ],
       path: "Sources",
-      exclude: ["CShim", "C_glfw", "codegen", "BUILD.bazel"]),
+      // The desktop OpenGL renderer (mjr_*), the `ui` widget toolkit (mjui_*), GLContext and the
+      // Simulate UI are not part of the headless build, so their Swift bindings are excluded.
+      // (These files are still produced by codegen; they are simply not compiled here.)
+      exclude: [
+        "CShim", "C_glfw", "codegen", "BUILD.bazel",
+        "GLContext.swift", "Simulate.swift",
+        "MjrContext.swift", "MjrContext+Extensions.swift", "MjrContext+Functions.swift",
+        "MjrRect.swift",
+        "MjUI.swift", "MjUI+Extensions.swift", "MjUI+Functions.swift",
+        "MjuiDef.swift", "MjuiDef+Extensions.swift", "MjuiDefObjectMapper.swift",
+        "MjuiDefState.swift",
+        "MjuiItem.swift", "MjuiItem+Extensions.swift",
+        "MjuiItemEdit.swift", "MjuiItemEdit+Extensions.swift",
+        "MjuiItemMulti.swift", "MjuiItemMulti+Extensions.swift",
+        "MjuiItemSingle.swift", "MjuiItemSingle+Extensions.swift",
+        "MjuiItemSlider.swift", "MjuiItemSlider+Extensions.swift",
+        "MjuiSection.swift", "MjuiSection+Extensions.swift",
+        "MjuiState.swift", "MjuiState+Extensions.swift", "MjuiState+Functions.swift",
+        "MjuiThemeColor.swift", "MjuiThemeColor+Extensions.swift",
+        "MjuiThemeSpacing.swift", "MjuiThemeSpacing+Extensions.swift",
+        // mjVFS became an opaque handle in MuJoCo 3.x; the old field-based VFS binding no longer
+        // applies, so it is excluded (see MIGRATION.md).
+        "MjVFS.swift", "MjVFS+Extensions.swift", "MjVFS+Functions.swift",
+      ]),
     .target(
       name: "ChangeCases",
       path: "Sources/codegen",

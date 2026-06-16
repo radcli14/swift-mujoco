@@ -1,6 +1,15 @@
 import ChangeCases
 import Foundation
 
+// Swift keywords that must be wrapped in backticks when used as an identifier (enum case or
+// property name). Not exhaustive, but covers everything MuJoCo's headers actually use.
+let SwiftKeywords: Set<String> = [
+  "static", "enum", "dynamic", "func", "init", "default", "deinit", "self", "super", "case",
+  "where", "in", "is", "as", "try", "var", "let", "class", "struct", "protocol", "return",
+  "guard", "defer", "repeat", "switch", "import", "operator", "extension", "internal", "private",
+  "public", "nil", "true", "false",
+]
+
 public struct Enum {
   public var name: String
   public var comment: String?
@@ -33,17 +42,22 @@ public func enumDecl(_ thisEnum: Enum) -> String {
       swiftKey = "_" + swiftKey
     }
     // If it is keyword, warp with ``.
-    if ["static", "enum", "dynamic", "func"].contains(swiftKey) {
+    if SwiftKeywords.contains(swiftKey) {
       swiftKey = "`\(swiftKey)`"
     }
-    keys.append(swiftKey)
     if var value = value {
       if value.contains("<<") {  // Evaluate this, Swift is not happy with anything other than literal.
         let parts = value.components(separatedBy: "<<")
         value = String(Int(parts[0])! << Int(parts[1])!)
       }
+      // Swift enum raw values must be literals. Composite/bitmask cases that OR together other
+      // named constants (e.g. mjtState's `physics = mjSTATE_QPOS | ...`) are not representable as
+      // a plain enum and are skipped (such enums are bitfields; the individual bits are kept).
+      guard !value.contains("|") && !value.contains("mj") else { continue }
+      keys.append(swiftKey)
       code += "  case \(swiftKey) = \(value)\n"
     } else {
+      keys.append(swiftKey)
       code += "  case \(swiftKey)\n"
     }
   }
@@ -84,7 +98,7 @@ public func optionSet(_ thisEnum: Enum) -> String {
       swiftKey = "_" + swiftKey
     }
     // If it is keyword, warp with ``.
-    if ["static", "enum", "dynamic", "func"].contains(swiftKey) {
+    if SwiftKeywords.contains(swiftKey) {
       swiftKey = "`\(swiftKey)`"
     }
     guard let value = value else { fatalError() }

@@ -49,9 +49,9 @@ extension MjLROpt {
   }
   /// evaluation time interval (at the end)
   @inlinable
-  public var inteval: Double {
-    get { _lropt.inteval }
-    set { _lropt.inteval = newValue }
+  public var interval: Double {
+    get { _lropt.interval }
+    set { _lropt.interval = newValue }
   }
   /// convergence tolerance (relative to range)
   @inlinable
@@ -62,12 +62,6 @@ extension MjLROpt {
 }
 extension MjLROpt: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "mode": mode, "useexisting": useexisting, "uselimit": uselimit, "accel": accel,
-        "maxforce": maxforce, "timeconst": timeconst, "timestep": timestep, "inttotal": inttotal,
-        "inteval": inteval, "tolrange": tolrange,
-      ])
+    Mirror(self, children: ["mode": mode, "useexisting": useexisting, "uselimit": uselimit, "accel": accel, "maxforce": maxforce, "timeconst": timeconst, "timestep": timestep, "inttotal": inttotal, "interval": interval, "tolrange": tolrange])
   }
 }

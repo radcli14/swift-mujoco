@@ -41,14 +41,15 @@ extension MjvCamera {
     get { _camera.elevation }
     set { _camera.elevation = newValue }
   }
+  /// 0: perspective; 1: orthographic
+  @inlinable
+  public var orthographic: Int32 {
+    get { _camera.orthographic }
+    set { _camera.orthographic = newValue }
+  }
 }
 extension MjvCamera: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "type": type, "fixedcamid": fixedcamid, "trackbodyid": trackbodyid, "lookat": lookat,
-        "distance": distance, "azimuth": azimuth, "elevation": elevation,
-      ])
+    Mirror(self, children: ["type": type, "fixedcamid": fixedcamid, "trackbodyid": trackbodyid, "lookat": lookat, "distance": distance, "azimuth": azimuth, "elevation": elevation, "orthographic": orthographic])
   }
 }

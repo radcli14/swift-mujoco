@@ -1,28 +1,17 @@
 import C_mujoco
 
 /// Protocolize internal storage for MjData. Internal use only.
+///
+/// In MuJoCo 3.x the model dimensions (nq, nv, nbody, ...) are 64-bit (mjtSize) and several
+/// arrays in mjData are sized by *dynamic* counts (ncon, nefc, nisland, ...) that change as the
+/// simulation runs. Rather than caching a fixed list of sizes by value (as in the 2.x binding),
+/// MjData now borrows the originating mjModel pointer and reads every dimension on demand:
+/// static dimensions from the model, dynamic dimensions from the data. The model therefore must
+/// outlive any MjData created from it (this already holds in normal usage where MjModel is kept
+/// alive for the duration of the simulation).
 public protocol MjDataStorage: AnyObject {
+  var _model: UnsafeMutablePointer<mjModel> { get }
   var _data: UnsafeMutablePointer<mjData> { get }
-  var nq: Int32 { get }
-  var nv: Int32 { get }
-  var na: Int32 { get }
-  var nu: Int32 { get }
-  var nbody: Int32 { get }
-  var nmocap: Int32 { get }
-  var nuserdata: Int32 { get }
-  var nsensordata: Int32 { get }
-  var njnt: Int32 { get }
-  var ngeom: Int32 { get }
-  var nsite: Int32 { get }
-  var ncam: Int32 { get }
-  var nlight: Int32 { get }
-  var ntendon: Int32 { get }
-  var nwrap: Int32 { get }
-  var nM: Int32 { get }
-  var nconmax: Int32 { get }
-  var njmax: Int32 { get }
-  var nD: Int32 { get }
-  var npluginstate: Int32 { get }
 }
 
 /// This is the main data structure holding the simulation state. It is the workspace where all functions read their modifiable inputs and write their outputs.
@@ -32,224 +21,110 @@ public struct MjData {
   let _storage: MjDataStorage
 
   @inlinable
+  var _model: UnsafeMutablePointer<mjModel> { _storage._model }
+  @inlinable
   var _data: UnsafeMutablePointer<mjData> { _storage._data }
+
+  // Static dimensions, read from the model (mjtSize / int64 in C, surfaced as Int32).
   @inlinable
-  var nq: Int32 { _storage.nq }
+  var na: Int32 { Int32(_model.pointee.na) }
   @inlinable
-  var nv: Int32 { _storage.nv }
+  var nbody: Int32 { Int32(_model.pointee.nbody) }
   @inlinable
-  var na: Int32 { _storage.na }
+  var nbvh: Int32 { Int32(_model.pointee.nbvh) }
   @inlinable
-  var nu: Int32 { _storage.nu }
+  var nbvhdynamic: Int32 { Int32(_model.pointee.nbvhdynamic) }
   @inlinable
-  var nbody: Int32 { _storage.nbody }
+  var nC: Int32 { Int32(_model.pointee.nC) }
   @inlinable
-  var nmocap: Int32 { _storage.nmocap }
+  var ncam: Int32 { Int32(_model.pointee.ncam) }
   @inlinable
-  var nuserdata: Int32 { _storage.nuserdata }
+  var nD: Int32 { Int32(_model.pointee.nD) }
   @inlinable
-  var nsensordata: Int32 { _storage.nsensordata }
+  var neq: Int32 { Int32(_model.pointee.neq) }
   @inlinable
-  var njnt: Int32 { _storage.njnt }
+  var nflexedge: Int32 { Int32(_model.pointee.nflexedge) }
   @inlinable
-  var ngeom: Int32 { _storage.ngeom }
+  var nflexelem: Int32 { Int32(_model.pointee.nflexelem) }
   @inlinable
-  var nsite: Int32 { _storage.nsite }
+  var nflexvert: Int32 { Int32(_model.pointee.nflexvert) }
   @inlinable
-  var ncam: Int32 { _storage.ncam }
+  var ngeom: Int32 { Int32(_model.pointee.ngeom) }
   @inlinable
-  var nlight: Int32 { _storage.nlight }
+  var nhistory: Int32 { Int32(_model.pointee.nhistory) }
   @inlinable
-  var ntendon: Int32 { _storage.ntendon }
+  var nJfe: Int32 { Int32(_model.pointee.nJfe) }
   @inlinable
-  var nwrap: Int32 { _storage.nwrap }
+  var nJfv: Int32 { Int32(_model.pointee.nJfv) }
   @inlinable
-  var nM: Int32 { _storage.nM }
+  var nJmom: Int32 { Int32(_model.pointee.nJmom) }
   @inlinable
-  var nconmax: Int32 { _storage.nconmax }
+  var njnt: Int32 { Int32(_model.pointee.njnt) }
   @inlinable
-  var njmax: Int32 { _storage.njmax }
+  var nJten: Int32 { Int32(_model.pointee.nJten) }
   @inlinable
-  var nD: Int32 { _storage.nD }
+  var nlight: Int32 { Int32(_model.pointee.nlight) }
   @inlinable
-  var npluginstate: Int32 { _storage.npluginstate }
+  var nM: Int32 { Int32(_model.pointee.nM) }
+  @inlinable
+  var nmocap: Int32 { Int32(_model.pointee.nmocap) }
+  @inlinable
+  var npluginstate: Int32 { Int32(_model.pointee.npluginstate) }
+  @inlinable
+  var nq: Int32 { Int32(_model.pointee.nq) }
+  @inlinable
+  var nsensordata: Int32 { Int32(_model.pointee.nsensordata) }
+  @inlinable
+  var nsite: Int32 { Int32(_model.pointee.nsite) }
+  @inlinable
+  var ntendon: Int32 { Int32(_model.pointee.ntendon) }
+  @inlinable
+  var ntree: Int32 { Int32(_model.pointee.ntree) }
+  @inlinable
+  var nu: Int32 { Int32(_model.pointee.nu) }
+  @inlinable
+  var nuserdata: Int32 { Int32(_model.pointee.nuserdata) }
+  @inlinable
+  var nv: Int32 { Int32(_model.pointee.nv) }
+  @inlinable
+  var nwrap: Int32 { Int32(_model.pointee.nwrap) }
+  // NOTE: the dynamic dimensions (ncon, nefc, nisland, nidof, nJ, nA, nY, nplugin) are real
+  // mjData fields, so their Int32 accessors are generated in MjData+Extensions.swift and must NOT
+  // be redeclared here.
 
   @usableFromInline
-  init(
-    data: UnsafeMutablePointer<mjData>, nq: Int32, nv: Int32, na: Int32, nu: Int32, nbody: Int32,
-    nmocap: Int32, nuserdata: Int32, nsensordata: Int32, njnt: Int32, ngeom: Int32, nsite: Int32,
-    ncam: Int32, nlight: Int32, ntendon: Int32, nwrap: Int32, nM: Int32, nconmax: Int32,
-    njmax: Int32, nD: Int32, npluginstate: Int32
-  ) {
-    _storage = Storage(
-      data: data, nq: nq, nv: nv, na: na, nu: nu, nbody: nbody, nmocap: nmocap,
-      nuserdata: nuserdata, nsensordata: nsensordata, njnt: njnt, ngeom: ngeom, nsite: nsite,
-      ncam: ncam, nlight: nlight, ntendon: ntendon, nwrap: nwrap, nM: nM, nconmax: nconmax,
-      njmax: njmax, nD: nD, npluginstate: npluginstate)
+  init(model: UnsafeMutablePointer<mjModel>, data: UnsafeMutablePointer<mjData>) {
+    _storage = Storage(model: model, data: data)
   }
 
   @usableFromInline
-  init(
-    staticData: UnsafeMutablePointer<mjData>, nq: Int32, nv: Int32, na: Int32, nu: Int32,
-    nbody: Int32,
-    nmocap: Int32, nuserdata: Int32, nsensordata: Int32, njnt: Int32, ngeom: Int32, nsite: Int32,
-    ncam: Int32, nlight: Int32, ntendon: Int32, nwrap: Int32, nM: Int32, nconmax: Int32,
-    njmax: Int32, nD: Int32, npluginstate: Int32
-  ) {
-    _storage = StaticStorage(
-      data: staticData, nq: nq, nv: nv, na: na, nu: nu, nbody: nbody, nmocap: nmocap,
-      nuserdata: nuserdata, nsensordata: nsensordata, njnt: njnt, ngeom: ngeom, nsite: nsite,
-      ncam: ncam, nlight: nlight, ntendon: ntendon, nwrap: nwrap, nM: nM, nconmax: nconmax,
-      njmax: njmax, nD: nD, npluginstate: npluginstate)
+  init(model: UnsafeMutablePointer<mjModel>, staticData: UnsafeMutablePointer<mjData>) {
+    _storage = StaticStorage(model: model, data: staticData)
   }
 
   @usableFromInline
   final class StaticStorage: MjDataStorage {
     @usableFromInline
+    let _model: UnsafeMutablePointer<mjModel>
+    @usableFromInline
     let _data: UnsafeMutablePointer<mjData>
-    @usableFromInline
-    let nq: Int32
-    @usableFromInline
-    let nv: Int32
-    @usableFromInline
-    let na: Int32
-    @usableFromInline
-    let nu: Int32
-    @usableFromInline
-    let nbody: Int32
-    @usableFromInline
-    let nmocap: Int32
-    @usableFromInline
-    let nuserdata: Int32
-    @usableFromInline
-    let nsensordata: Int32
-    @usableFromInline
-    let njnt: Int32
-    @usableFromInline
-    let ngeom: Int32
-    @usableFromInline
-    let nsite: Int32
-    @usableFromInline
-    let ncam: Int32
-    @usableFromInline
-    let nlight: Int32
-    @usableFromInline
-    let ntendon: Int32
-    @usableFromInline
-    let nwrap: Int32
-    @usableFromInline
-    let nM: Int32
-    @usableFromInline
-    let nconmax: Int32
-    @usableFromInline
-    let njmax: Int32
-    @usableFromInline
-    let nD: Int32
-    @usableFromInline
-    let npluginstate: Int32
 
-    init(
-      data: UnsafeMutablePointer<mjData>, nq: Int32, nv: Int32, na: Int32, nu: Int32, nbody: Int32,
-      nmocap: Int32, nuserdata: Int32, nsensordata: Int32, njnt: Int32, ngeom: Int32, nsite: Int32,
-      ncam: Int32, nlight: Int32, ntendon: Int32, nwrap: Int32, nM: Int32, nconmax: Int32,
-      njmax: Int32, nD: Int32, npluginstate: Int32
-    ) {
+    init(model: UnsafeMutablePointer<mjModel>, data: UnsafeMutablePointer<mjData>) {
+      _model = model
       _data = data
-      self.nq = nq
-      self.nv = nv
-      self.na = na
-      self.nu = nu
-      self.nbody = nbody
-      self.nmocap = nmocap
-      self.nuserdata = nuserdata
-      self.nsensordata = nsensordata
-      self.njnt = njnt
-      self.ngeom = ngeom
-      self.nsite = nsite
-      self.ncam = ncam
-      self.nlight = nlight
-      self.ntendon = ntendon
-      self.nwrap = nwrap
-      self.nM = nM
-      self.nconmax = nconmax
-      self.njmax = njmax
-      self.nD = nD
-      self.npluginstate = npluginstate
     }
   }
 
   @usableFromInline
   final class Storage: MjDataStorage {
     @usableFromInline
+    let _model: UnsafeMutablePointer<mjModel>
+    @usableFromInline
     let _data: UnsafeMutablePointer<mjData>
-    @usableFromInline
-    let nq: Int32
-    @usableFromInline
-    let nv: Int32
-    @usableFromInline
-    let na: Int32
-    @usableFromInline
-    let nu: Int32
-    @usableFromInline
-    let nbody: Int32
-    @usableFromInline
-    let nmocap: Int32
-    @usableFromInline
-    let nuserdata: Int32
-    @usableFromInline
-    let nsensordata: Int32
-    @usableFromInline
-    let njnt: Int32
-    @usableFromInline
-    let ngeom: Int32
-    @usableFromInline
-    let nsite: Int32
-    @usableFromInline
-    let ncam: Int32
-    @usableFromInline
-    let nlight: Int32
-    @usableFromInline
-    let ntendon: Int32
-    @usableFromInline
-    let nwrap: Int32
-    @usableFromInline
-    let nM: Int32
-    @usableFromInline
-    let nconmax: Int32
-    @usableFromInline
-    let njmax: Int32
-    @usableFromInline
-    let nD: Int32
-    @usableFromInline
-    let npluginstate: Int32
 
-    init(
-      data: UnsafeMutablePointer<mjData>, nq: Int32, nv: Int32, na: Int32, nu: Int32, nbody: Int32,
-      nmocap: Int32, nuserdata: Int32, nsensordata: Int32, njnt: Int32, ngeom: Int32, nsite: Int32,
-      ncam: Int32, nlight: Int32, ntendon: Int32, nwrap: Int32, nM: Int32, nconmax: Int32,
-      njmax: Int32, nD: Int32, npluginstate: Int32
-    ) {
+    init(model: UnsafeMutablePointer<mjModel>, data: UnsafeMutablePointer<mjData>) {
+      _model = model
       _data = data
-      self.nq = nq
-      self.nv = nv
-      self.na = na
-      self.nu = nu
-      self.nbody = nbody
-      self.nmocap = nmocap
-      self.nuserdata = nuserdata
-      self.nsensordata = nsensordata
-      self.njnt = njnt
-      self.ngeom = ngeom
-      self.nsite = nsite
-      self.ncam = ncam
-      self.nlight = nlight
-      self.ntendon = ntendon
-      self.nwrap = nwrap
-      self.nM = nM
-      self.nconmax = nconmax
-      self.njmax = njmax
-      self.nD = nD
-      self.npluginstate = npluginstate
     }
 
     deinit {
@@ -263,7 +138,7 @@ extension MjData {
   /// Allocate array of specified size on mjData stack. Call mju_error on stack overflow.
   @inlinable
   public func stackAlloc(size: Int32) -> MjArray<Double> {
-    return MjArray(array: mj_stackAlloc(self._data, size), object: _storage, len: size)
+    return MjArray(array: mj_stackAllocNum(self._data, Int(size)), object: _storage, len: size)
   }
 }
 
@@ -272,11 +147,7 @@ extension MjData {
   /// Copy mjData. m is only required to contain the size fields from MJMODEL_INTS.
   @inlinable
   public func copied(model: MjModel) -> MjData {
-    return MjData(
-      data: mj_copyData(nil, model._model, _data), nq: nq, nv: nv, na: na, nu: nu, nbody: nbody,
-      nmocap: nmocap, nuserdata: nuserdata, nsensordata: nsensordata, njnt: njnt, ngeom: ngeom,
-      nsite: nsite, ncam: ncam, nlight: nlight, ntendon: ntendon, nwrap: nwrap, nM: nM,
-      nconmax: nconmax, njmax: njmax, nD: nD, npluginstate: npluginstate)
+    return MjData(model: model._model, data: mj_copyData(nil, model._model, _data))
   }
   /// Copy mjData. m is only required to contain the size fields from MJMODEL_INTS.
   @inlinable

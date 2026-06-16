@@ -7,13 +7,7 @@ extension MjuiState {
   }
   /// rectangles (index 0: entire window)
   @inlinable
-  public var rect:
-    (
-      MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect,
-      MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect,
-      MjrRect, MjrRect, MjrRect, MjrRect, MjrRect
-    )
-  {
+  public var rect: (MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect, MjrRect) {
     get { _state.rect }
     set { _state.rect = newValue }
   }
@@ -143,17 +137,21 @@ extension MjuiState {
     get { MjtButton(rawValue: _state.dragbutton)! }
     set { _state.dragbutton = newValue.rawValue }
   }
+  /// number of files dropped
+  @inlinable
+  public var dropcount: Int32 {
+    get { _state.dropcount }
+    set { _state.dropcount = newValue }
+  }
+  /// paths to files dropped
+  @inlinable
+  public var droppaths: UnsafeMutableRawPointer {
+    get { _state.droppaths }
+    set { _state.droppaths = newValue }
+  }
 }
 extension MjuiState: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "nrect": nrect, "rect": rect, "type": type, "left": left, "right": right, "middle": middle,
-        "doubleclick": doubleclick, "button": button, "buttontime": buttontime, "x": x, "y": y,
-        "dx": dx, "dy": dy, "sx": sx, "sy": sy, "control": control, "shift": shift, "alt": alt,
-        "key": key, "keytime": keytime, "mouserect": mouserect, "dragrect": dragrect,
-        "dragbutton": dragbutton, "userdata": userdata as Any,
-      ])
+    Mirror(self, children: ["nrect": nrect, "rect": rect, "type": type, "left": left, "right": right, "middle": middle, "doubleclick": doubleclick, "button": button, "buttontime": buttontime, "x": x, "y": y, "dx": dx, "dy": dy, "sx": sx, "sy": sy, "control": control, "shift": shift, "alt": alt, "key": key, "keytime": keytime, "mouserect": mouserect, "dragrect": dragrect, "dragbutton": dragbutton, "dropcount": dropcount, "droppaths": droppaths, "userdata": userdata as Any])
   }
 }

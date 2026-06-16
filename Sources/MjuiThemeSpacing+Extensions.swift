@@ -23,6 +23,18 @@ extension MjuiThemeSpacing {
     get { _themespacing.section }
     set { _themespacing.section = newValue }
   }
+  /// corner radius for section
+  @inlinable
+  public var cornersect: Int32 {
+    get { _themespacing.cornersect }
+    set { _themespacing.cornersect = newValue }
+  }
+  /// corner radius for separator
+  @inlinable
+  public var cornersep: Int32 {
+    get { _themespacing.cornersep }
+    set { _themespacing.cornersep = newValue }
+  }
   /// item side gap
   @inlinable
   public var itemside: Int32 {
@@ -68,12 +80,6 @@ extension MjuiThemeSpacing {
 }
 extension MjuiThemeSpacing: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "total": total, "scroll": scroll, "label": label, "section": section, "itemside": itemside,
-        "itemmid": itemmid, "itemver": itemver, "texthor": texthor, "textver": textver,
-        "linescroll": linescroll, "samples": samples,
-      ])
+    Mirror(self, children: ["total": total, "scroll": scroll, "label": label, "section": section, "cornersect": cornersect, "cornersep": cornersep, "itemside": itemside, "itemmid": itemmid, "itemver": itemver, "texthor": texthor, "textver": textver, "linescroll": linescroll, "samples": samples])
   }
 }

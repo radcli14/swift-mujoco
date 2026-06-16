@@ -41,6 +41,12 @@ extension MjvOption {
     get { _option.actuatorgroup }
     set { _option.actuatorgroup = newValue }
   }
+  /// flex visualization by group
+  @inlinable
+  public var flexgroup: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8) {
+    get { _option.flexgroup }
+    set { _option.flexgroup = newValue }
+  }
   /// skin visualization by group
   @inlinable
   public var skingroup: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8) {
@@ -49,24 +55,25 @@ extension MjvOption {
   }
   /// visualization flags (indexed by mjtVisFlag)
   @inlinable
-  public var flags:
-    (
-      UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
-      UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8
-    )
-  {
+  public var flags: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8) {
     get { _option.flags }
     set { _option.flags = newValue }
+  }
+  /// depth of the bounding volume hierarchy to be visualized
+  @inlinable
+  public var bvhDepth: Int32 {
+    get { _option.bvh_depth }
+    set { _option.bvh_depth = newValue }
+  }
+  /// element layer to be visualized for 3D flex
+  @inlinable
+  public var flexLayer: Int32 {
+    get { _option.flex_layer }
+    set { _option.flex_layer = newValue }
   }
 }
 extension MjvOption: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "label": label, "frame": frame, "geomgroup": geomgroup, "sitegroup": sitegroup,
-        "jointgroup": jointgroup, "tendongroup": tendongroup, "actuatorgroup": actuatorgroup,
-        "skingroup": skingroup, "flags": flags,
-      ])
+    Mirror(self, children: ["label": label, "frame": frame, "geomgroup": geomgroup, "sitegroup": sitegroup, "jointgroup": jointgroup, "tendongroup": tendongroup, "actuatorgroup": actuatorgroup, "flexgroup": flexgroup, "skingroup": skingroup, "flags": flags, "bvhDepth": bvhDepth, "flexLayer": flexLayer])
   }
 }

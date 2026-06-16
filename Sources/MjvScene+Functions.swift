@@ -1,12 +1,19 @@
 import C_mujoco
 
 extension MjvScene {
+  ///  Print scene to text file.
+  @inlinable
+  public func printScene(filename: String) {
+    mj_printScene(self._scene, filename)
+  }
+  /// Print scene to text file, specifying format. float_format must be a valid printf-style format string for a single float value.
+  @inlinable
+  public func printFormattedScene(filename: String, floatFormat: String) {
+    mj_printFormattedScene(self._scene, filename, floatFormat)
+  }
   ///  Transform pose from room to model space.
   @inlinable
-  public func room2model<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(
-    modelpos: inout T0, modelquat: inout T1, roompos: MjDoubleBufferPointer,
-    roomquat: MjDoubleBufferPointer
-  ) {
+  public func room2model<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(modelpos: inout T0, modelquat: inout T1, roompos: MjDoubleBufferPointer, roomquat: MjDoubleBufferPointer) {
     precondition(modelpos.count == 3)
     modelpos.withUnsafeMutableBufferPointer { modelpos__p in
       precondition(modelquat.count == 4)
@@ -15,9 +22,7 @@ extension MjvScene {
         roompos.withUnsafeBufferPointer { roompos__p in
           precondition(roomquat.count == 4)
           roomquat.withUnsafeBufferPointer { roomquat__p in
-            mjv_room2model(
-              modelpos__p.baseAddress, modelquat__p.baseAddress, roompos__p.baseAddress,
-              roomquat__p.baseAddress, self._scene)
+            mjv_room2model(modelpos__p.baseAddress, modelquat__p.baseAddress, roompos__p.baseAddress, roomquat__p.baseAddress, self._scene)
           }
         }
       }
@@ -25,10 +30,7 @@ extension MjvScene {
   }
   ///  Transform pose from model to room space.
   @inlinable
-  public func model2room<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(
-    roompos: inout T0, roomquat: inout T1, modelpos: MjDoubleBufferPointer,
-    modelquat: MjDoubleBufferPointer
-  ) {
+  public func model2room<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer>(roompos: inout T0, roomquat: inout T1, modelpos: MjDoubleBufferPointer, modelquat: MjDoubleBufferPointer) {
     precondition(roompos.count == 3)
     roompos.withUnsafeMutableBufferPointer { roompos__p in
       precondition(roomquat.count == 4)
@@ -37,9 +39,7 @@ extension MjvScene {
         modelpos.withUnsafeBufferPointer { modelpos__p in
           precondition(modelquat.count == 4)
           modelquat.withUnsafeBufferPointer { modelquat__p in
-            mjv_model2room(
-              roompos__p.baseAddress, roomquat__p.baseAddress, modelpos__p.baseAddress,
-              modelquat__p.baseAddress, self._scene)
+            mjv_model2room(roompos__p.baseAddress, roomquat__p.baseAddress, modelpos__p.baseAddress, modelquat__p.baseAddress, self._scene)
           }
         }
       }
@@ -47,36 +47,28 @@ extension MjvScene {
   }
   ///  Get camera info in model space; average left and right OpenGL cameras.
   @inlinable
-  public func cameraInModel<
-    T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer,
-    T2: MjDoubleMutableBufferPointer
-  >(headpos: inout T0, forward: inout T1, up: inout T2) {
+  public func cameraInModel<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer, T2: MjDoubleMutableBufferPointer>(headpos: inout T0, forward: inout T1, up: inout T2) {
     precondition(headpos.count == 3)
     headpos.withUnsafeMutableBufferPointer { headpos__p in
       precondition(forward.count == 3)
       forward.withUnsafeMutableBufferPointer { forward__p in
         precondition(up.count == 3)
         up.withUnsafeMutableBufferPointer { up__p in
-          mjv_cameraInModel(
-            headpos__p.baseAddress, forward__p.baseAddress, up__p.baseAddress, self._scene)
+          mjv_cameraInModel(headpos__p.baseAddress, forward__p.baseAddress, up__p.baseAddress, self._scene)
         }
       }
     }
   }
   ///  Get camera info in room space; average left and right OpenGL cameras.
   @inlinable
-  public func cameraInRoom<
-    T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer,
-    T2: MjDoubleMutableBufferPointer
-  >(headpos: inout T0, forward: inout T1, up: inout T2) {
+  public func cameraInRoom<T0: MjDoubleMutableBufferPointer, T1: MjDoubleMutableBufferPointer, T2: MjDoubleMutableBufferPointer>(headpos: inout T0, forward: inout T1, up: inout T2) {
     precondition(headpos.count == 3)
     headpos.withUnsafeMutableBufferPointer { headpos__p in
       precondition(forward.count == 3)
       forward.withUnsafeMutableBufferPointer { forward__p in
         precondition(up.count == 3)
         up.withUnsafeMutableBufferPointer { up__p in
-          mjv_cameraInRoom(
-            headpos__p.baseAddress, forward__p.baseAddress, up__p.baseAddress, self._scene)
+          mjv_cameraInRoom(headpos__p.baseAddress, forward__p.baseAddress, up__p.baseAddress, self._scene)
         }
       }
     }
@@ -88,33 +80,26 @@ extension MjvScene {
   }
   ///  Move model with mouse; action is mjtMouse.
   @inlinable
-  public mutating func move(
-    model: MjModel, action: MjtMouse, reldx: Double, reldy: Double, roomup: MjDoubleBufferPointer
-  ) {
+  public mutating func move(model: MjModel, action: MjtMouse, reldx: Double, reldy: Double, roomup: MjDoubleBufferPointer) {
     precondition(roomup.count == 3)
     roomup.withUnsafeBufferPointer { roomup__p in
       mjv_moveModel(model._model, action.rawValue, reldx, reldy, roomup__p.baseAddress, self._scene)
     }
   }
-  ///  Select geom or skin with mouse, return bodyid; -1: none selected.
+  /// Select geom, flex or skin with mouse; return bodyid; -1: none selected. Nullable: geomid, flexid, skinid
   @inlinable
-  public func select<
-    T0: MjDoubleMutableBufferPointer, T1: MjInt32MutableBufferPointer,
-    T2: MjInt32MutableBufferPointer
-  >(
-    model: MjModel, data: MjData, vopt: MjvOption, aspectratio: Double, relx: Double, rely: Double,
-    selpnt: inout T0, geomid: inout T1, skinid: inout T2
-  ) -> Int32 {
+  public func select<T0: MjDoubleMutableBufferPointer, T1: MjInt32MutableBufferPointer, T2: MjInt32MutableBufferPointer, T3: MjInt32MutableBufferPointer>(model: MjModel, data: MjData, vopt: MjvOption, aspectratio: Double, relx: Double, rely: Double, selpnt: inout T0, geomid: inout T1, flexid: inout T2, skinid: inout T3) -> Int32 {
     var vopt__option = vopt._option
     precondition(selpnt.count == 3)
     return selpnt.withUnsafeMutableBufferPointer { selpnt__p in
       precondition(geomid.count == 1)
       return geomid.withUnsafeMutableBufferPointer { geomid__p in
-        precondition(skinid.count == 1)
-        return skinid.withUnsafeMutableBufferPointer { skinid__p in
-          return mjv_select(
-            model._model, data._data, &vopt__option, aspectratio, relx, rely, self._scene,
-            selpnt__p.baseAddress, geomid__p.baseAddress, skinid__p.baseAddress)
+        precondition(flexid.count == 1)
+        return flexid.withUnsafeMutableBufferPointer { flexid__p in
+          precondition(skinid.count == 1)
+          return skinid.withUnsafeMutableBufferPointer { skinid__p in
+            return mjv_select(model._model, data._data, &vopt__option, aspectratio, relx, rely, self._scene, selpnt__p.baseAddress, geomid__p.baseAddress, flexid__p.baseAddress, skinid__p.baseAddress)
+          }
         }
       }
     }
@@ -124,29 +109,26 @@ extension MjvScene {
   public mutating func makeScene(model: MjModel, maxgeom: Int32) {
     mjv_makeScene(model._model, self._scene, maxgeom)
   }
-  ///  Add geoms from selected categories. catmask is mjtCatBit.
+  ///  Add geoms from selected categories.
   @inlinable
-  public mutating func addGeoms(
-    model: MjModel, data: inout MjData, option: MjvOption, perturb: MjvPerturb, catmask: MjtCatBit
-  ) {
+  public mutating func addGeoms(model: MjModel, data: inout MjData, option: MjvOption, perturb: MjvPerturb, catmask: Int32) {
     var option__option = option._option
     var perturb__perturb = perturb._perturb
-    mjv_addGeoms(
-      model._model, data._data, &option__option, &perturb__perturb, catmask.rawValue, self._scene)
+    mjv_addGeoms(model._model, data._data, &option__option, &perturb__perturb, catmask, self._scene)
   }
   ///  Make list of lights.
   @inlinable
-  public mutating func makeLights(model: MjModel, data: inout MjData) {
+  public mutating func makeLights(model: MjModel, data: MjData) {
     mjv_makeLights(model._model, data._data, self._scene)
   }
   ///  Update camera.
   @inlinable
-  public mutating func updateCamera(model: MjModel, data: inout MjData, camera: inout MjvCamera) {
+  public mutating func updateCamera(model: MjModel, data: MjData, camera: inout MjvCamera) {
     mjv_updateCamera(model._model, data._data, &camera._camera, self._scene)
   }
   ///  Update skins.
   @inlinable
-  public mutating func updateSkin(model: MjModel, data: inout MjData) {
+  public mutating func updateSkin(model: MjModel, data: MjData) {
     mjv_updateSkin(model._model, data._data, self._scene)
   }
 }

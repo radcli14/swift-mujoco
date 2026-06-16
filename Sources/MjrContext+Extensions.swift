@@ -68,17 +68,9 @@ extension MjrContext {
   /// auxiliary buffer width
   @inlinable
   public var auxWidth: MjArray<Int32> {
-    get {
-      MjArray<Int32>(
-        array: withUnsafeMutablePointer(
-          to: &_context.pointee.auxWidth,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage,
-        len: 10)
-    }
+    get { MjArray<Int32>(array: withUnsafeMutablePointer(to: &_context.pointee.auxWidth, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage, len: 10) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(
-        to: &_context.pointee.auxWidth,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(to: &_context.pointee.auxWidth, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(10))
     }
@@ -86,17 +78,9 @@ extension MjrContext {
   /// auxiliary buffer height
   @inlinable
   public var auxHeight: MjArray<Int32> {
-    get {
-      MjArray<Int32>(
-        array: withUnsafeMutablePointer(
-          to: &_context.pointee.auxHeight,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage,
-        len: 10)
-    }
+    get { MjArray<Int32>(array: withUnsafeMutablePointer(to: &_context.pointee.auxHeight, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage, len: 10) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(
-        to: &_context.pointee.auxHeight,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(to: &_context.pointee.auxHeight, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(10))
     }
@@ -104,17 +88,9 @@ extension MjrContext {
   /// auxiliary buffer multisamples
   @inlinable
   public var auxSamples: MjArray<Int32> {
-    get {
-      MjArray<Int32>(
-        array: withUnsafeMutablePointer(
-          to: &_context.pointee.auxSamples,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage,
-        len: 10)
-    }
+    get { MjArray<Int32>(array: withUnsafeMutablePointer(to: &_context.pointee.auxSamples, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage, len: 10) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(
-        to: &_context.pointee.auxSamples,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(to: &_context.pointee.auxSamples, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(10))
     }
@@ -149,7 +125,7 @@ extension MjrContext {
     get { _context.pointee.offDepthStencil }
     set { _context.pointee.offDepthStencil = newValue }
   }
-  /// offscreen depth and stencil buffer for resolving multisamples
+  /// offscreen depth and stencil buffer for multisamples
   @inlinable
   public var offDepthStencil_r: UInt32 {
     get { _context.pointee.offDepthStencil_r }
@@ -170,17 +146,9 @@ extension MjrContext {
   /// auxiliary framebuffer object
   @inlinable
   public var auxFbo: MjArray<UInt32> {
-    get {
-      MjArray<UInt32>(
-        array: withUnsafeMutablePointer(
-          to: &_context.pointee.auxFBO,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) }), object: _storage,
-        len: 10)
-    }
+    get { MjArray<UInt32>(array: withUnsafeMutablePointer(to: &_context.pointee.auxFBO, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) }), object: _storage, len: 10) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<UInt32> = withUnsafeMutablePointer(
-        to: &_context.pointee.auxFBO,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<UInt32> = withUnsafeMutablePointer(to: &_context.pointee.auxFBO, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(10))
     }
@@ -188,17 +156,9 @@ extension MjrContext {
   /// auxiliary framebuffer object for resolving
   @inlinable
   public var auxFBO_r: MjArray<UInt32> {
-    get {
-      MjArray<UInt32>(
-        array: withUnsafeMutablePointer(
-          to: &_context.pointee.auxFBO_r,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) }), object: _storage,
-        len: 10)
-    }
+    get { MjArray<UInt32>(array: withUnsafeMutablePointer(to: &_context.pointee.auxFBO_r, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) }), object: _storage, len: 10) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<UInt32> = withUnsafeMutablePointer(
-        to: &_context.pointee.auxFBO_r,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<UInt32> = withUnsafeMutablePointer(to: &_context.pointee.auxFBO_r, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(10))
     }
@@ -206,17 +166,9 @@ extension MjrContext {
   /// auxiliary color buffer
   @inlinable
   public var auxColor: MjArray<UInt32> {
-    get {
-      MjArray<UInt32>(
-        array: withUnsafeMutablePointer(
-          to: &_context.pointee.auxColor,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) }), object: _storage,
-        len: 10)
-    }
+    get { MjArray<UInt32>(array: withUnsafeMutablePointer(to: &_context.pointee.auxColor, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) }), object: _storage, len: 10) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<UInt32> = withUnsafeMutablePointer(
-        to: &_context.pointee.auxColor,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<UInt32> = withUnsafeMutablePointer(to: &_context.pointee.auxColor, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(10))
     }
@@ -224,20 +176,30 @@ extension MjrContext {
   /// auxiliary color buffer for resolving
   @inlinable
   public var auxColor_r: MjArray<UInt32> {
-    get {
-      MjArray<UInt32>(
-        array: withUnsafeMutablePointer(
-          to: &_context.pointee.auxColor_r,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) }), object: _storage,
-        len: 10)
-    }
+    get { MjArray<UInt32>(array: withUnsafeMutablePointer(to: &_context.pointee.auxColor_r, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) }), object: _storage, len: 10) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<UInt32> = withUnsafeMutablePointer(
-        to: &_context.pointee.auxColor_r,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<UInt32> = withUnsafeMutablePointer(to: &_context.pointee.auxColor_r, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(10))
     }
+  }
+  /// material texture ids (-1: no texture)
+  @inlinable
+  public var matTexid: Int32 {
+    get { _context.pointee.mat_texid }
+    set { _context.pointee.mat_texid = newValue }
+  }
+  /// uniform cube mapping
+  @inlinable
+  public var matTexuniform: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) {
+    get { _context.pointee.mat_texuniform }
+    set { _context.pointee.mat_texuniform = newValue }
+  }
+  /// texture repetition for 2d mapping
+  @inlinable
+  public var matTexrepeat: Float {
+    get { _context.pointee.mat_texrepeat }
+    set { _context.pointee.mat_texrepeat = newValue }
   }
   /// number of allocated textures
   @inlinable
@@ -248,17 +210,9 @@ extension MjrContext {
   /// type of texture (mjtTexture) (ntexture)
   @inlinable
   public var textureType: MjArray<MjtTexture> {
-    get {
-      MjArray<MjtTexture>(
-        array: withUnsafeMutablePointer(
-          to: &_context.pointee.textureType,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: MjtTexture.self) }),
-        object: _storage, len: ntexture)
-    }
+    get { MjArray<MjtTexture>(array: withUnsafeMutablePointer(to: &_context.pointee.textureType, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: MjtTexture.self) }), object: _storage, len: ntexture) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<MjtTexture> = withUnsafeMutablePointer(
-        to: &_context.pointee.textureType,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: MjtTexture.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<MjtTexture> = withUnsafeMutablePointer(to: &_context.pointee.textureType, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: MjtTexture.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(ntexture))
     }
@@ -266,19 +220,11 @@ extension MjrContext {
   /// texture names
   @inlinable
   public var texture: MjArray<UInt32> {
-    get {
-      MjArray<UInt32>(
-        array: withUnsafeMutablePointer(
-          to: &_context.pointee.texture,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) }), object: _storage,
-        len: 100)
-    }
+    get { MjArray<UInt32>(array: withUnsafeMutablePointer(to: &_context.pointee.texture, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) }), object: _storage, len: 1000) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<UInt32> = withUnsafeMutablePointer(
-        to: &_context.pointee.texture,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<UInt32> = withUnsafeMutablePointer(to: &_context.pointee.texture, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: UInt32.self) })
       guard unsafeMutablePointer != newValue._array else { return }
-      unsafeMutablePointer.assign(from: newValue._array, count: Int(100))
+      unsafeMutablePointer.assign(from: newValue._array, count: Int(1000))
     }
   }
   /// all planes from model
@@ -293,13 +239,13 @@ extension MjrContext {
     get { _context.pointee.baseMesh }
     set { _context.pointee.baseMesh = newValue }
   }
-  /// all hfields from model
+  /// all height fields from model
   @inlinable
   public var baseHField: UInt32 {
     get { _context.pointee.baseHField }
     set { _context.pointee.baseHField = newValue }
   }
-  /// all buildin geoms, with quality from model
+  /// all builtin geoms, with quality from model
   @inlinable
   public var baseBuiltin: UInt32 {
     get { _context.pointee.baseBuiltin }
@@ -402,35 +348,19 @@ extension MjrContext {
   /// character widths: normal and shadow
   @inlinable
   public var charWidth: MjArray<Int32> {
-    get {
-      MjArray<Int32>(
-        array: withUnsafeMutablePointer(
-          to: &_context.pointee.charWidth,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage,
-        len: 127)
-    }
+    get { MjArray<Int32>(array: withUnsafeMutablePointer(to: &_context.pointee.charWidth, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage, len: 127) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(
-        to: &_context.pointee.charWidth,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(to: &_context.pointee.charWidth, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(127))
     }
   }
-  /// chacarter widths: big
+  /// character widths: big
   @inlinable
   public var charWidthBig: MjArray<Int32> {
-    get {
-      MjArray<Int32>(
-        array: withUnsafeMutablePointer(
-          to: &_context.pointee.charWidthBig,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage,
-        len: 127)
-    }
+    get { MjArray<Int32>(array: withUnsafeMutablePointer(to: &_context.pointee.charWidthBig, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage, len: 127) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(
-        to: &_context.pointee.charWidthBig,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(to: &_context.pointee.charWidthBig, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(127))
     }
@@ -483,32 +413,21 @@ extension MjrContext {
     get { _context.pointee.currentBuffer }
     set { _context.pointee.currentBuffer = newValue }
   }
+  /// default color pixel format for mjr_readPixels
+  @inlinable
+  public var readPixelFormat: Int32 {
+    get { _context.pointee.readPixelFormat }
+    set { _context.pointee.readPixelFormat = newValue }
+  }
+  /// depth mapping: mjDEPTH_ZERONEAR or mjDEPTH_ZEROFAR
+  @inlinable
+  public var readDepthMap: Int32 {
+    get { _context.pointee.readDepthMap }
+    set { _context.pointee.readDepthMap = newValue }
+  }
 }
 extension MjrContext: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "lineWidth": lineWidth, "shadowClip": shadowClip, "shadowScale": shadowScale,
-        "fogStart": fogStart, "fogEnd": fogEnd, "fogRgba": fogRgba, "shadowSize": shadowSize,
-        "offWidth": offWidth, "offHeight": offHeight, "offSamples": offSamples,
-        "fontScale": fontScale, "auxWidth": auxWidth, "auxHeight": auxHeight,
-        "auxSamples": auxSamples, "offFbo": offFbo, "offFBO_r": offFBO_r, "offColor": offColor,
-        "offColor_r": offColor_r, "offDepthStencil": offDepthStencil,
-        "offDepthStencil_r": offDepthStencil_r, "shadowFbo": shadowFbo, "shadowTex": shadowTex,
-        "auxFbo": auxFbo, "auxFBO_r": auxFBO_r, "auxColor": auxColor, "auxColor_r": auxColor_r,
-        "ntexture": ntexture, "textureType": textureType, "texture": texture,
-        "basePlane": basePlane, "baseMesh": baseMesh, "baseHField": baseHField,
-        "baseBuiltin": baseBuiltin, "baseFontNormal": baseFontNormal,
-        "baseFontShadow": baseFontShadow, "baseFontBig": baseFontBig, "rangePlane": rangePlane,
-        "rangeMesh": rangeMesh, "rangeHField": rangeHField, "rangeBuiltin": rangeBuiltin,
-        "rangeFont": rangeFont, "nskin": nskin, "skinvertVbo": skinvertVbo,
-        "skinnormalVbo": skinnormalVbo, "skintexcoordVbo": skintexcoordVbo,
-        "skinfaceVbo": skinfaceVbo, "charWidth": charWidth, "charWidthBig": charWidthBig,
-        "charHeight": charHeight, "charHeightBig": charHeightBig, "glInitialized": glInitialized,
-        "windowAvailable": windowAvailable, "windowSamples": windowSamples,
-        "windowStereo": windowStereo, "windowDoublebuffer": windowDoublebuffer,
-        "currentBuffer": currentBuffer,
-      ])
+    Mirror(self, children: ["lineWidth": lineWidth, "shadowClip": shadowClip, "shadowScale": shadowScale, "fogStart": fogStart, "fogEnd": fogEnd, "fogRgba": fogRgba, "shadowSize": shadowSize, "offWidth": offWidth, "offHeight": offHeight, "offSamples": offSamples, "fontScale": fontScale, "auxWidth": auxWidth, "auxHeight": auxHeight, "auxSamples": auxSamples, "offFbo": offFbo, "offFBO_r": offFBO_r, "offColor": offColor, "offColor_r": offColor_r, "offDepthStencil": offDepthStencil, "offDepthStencil_r": offDepthStencil_r, "shadowFbo": shadowFbo, "shadowTex": shadowTex, "auxFbo": auxFbo, "auxFBO_r": auxFBO_r, "auxColor": auxColor, "auxColor_r": auxColor_r, "matTexid": matTexid, "matTexuniform": matTexuniform, "matTexrepeat": matTexrepeat, "ntexture": ntexture, "textureType": textureType, "texture": texture, "basePlane": basePlane, "baseMesh": baseMesh, "baseHField": baseHField, "baseBuiltin": baseBuiltin, "baseFontNormal": baseFontNormal, "baseFontShadow": baseFontShadow, "baseFontBig": baseFontBig, "rangePlane": rangePlane, "rangeMesh": rangeMesh, "rangeHField": rangeHField, "rangeBuiltin": rangeBuiltin, "rangeFont": rangeFont, "nskin": nskin, "skinvertVbo": skinvertVbo, "skinnormalVbo": skinnormalVbo, "skintexcoordVbo": skintexcoordVbo, "skinfaceVbo": skinfaceVbo, "charWidth": charWidth, "charWidthBig": charWidthBig, "charHeight": charHeight, "charHeightBig": charHeightBig, "glInitialized": glInitialized, "windowAvailable": windowAvailable, "windowSamples": windowSamples, "windowStereo": windowStereo, "windowDoublebuffer": windowDoublebuffer, "currentBuffer": currentBuffer, "readPixelFormat": readPixelFormat, "readDepthMap": readDepthMap])
   }
 }

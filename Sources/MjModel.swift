@@ -54,17 +54,17 @@ public struct MjModel {
   }
 
   /// Load model from binary MJB file.
-  public init?(fromBinaryPath filePath: String, vfs: MjVFS? = nil) {
-    guard let model = mj_loadModel(filePath, vfs?._vfs) else {
+  public init?(fromBinaryPath filePath: String) {
+    guard let model = mj_loadModel(filePath, nil) else {
       return nil
     }
     self.init(model: model)
   }
 
-  /// Parse XML file in MJCF or URDF format, compile it, return low-level model. If vfs is not NULL, look up files in vfs before reading from disk. If error is not NULL, it must have size error_sz.
-  public init(fromXMLPath filePath: String, vfs: MjVFS? = nil) throws {
+  /// Parse XML file in MJCF or URDF format, compile it, return low-level model. If error is not NULL, it must have size error_sz.
+  public init(fromXMLPath filePath: String) throws {
     let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: 256)
-    guard let model = mj_loadXML(filePath, vfs?._vfs, errorStr, 256) else {
+    guard let model = mj_loadXML(filePath, nil, errorStr, 256) else {
       let error = MjError.xml(String(cString: errorStr, encoding: .utf8))
       errorStr.deallocate()
       throw error
@@ -73,29 +73,42 @@ public struct MjModel {
     self.init(model: model)
   }
 
-  /// Parse XML file in MJCF or URDF format, compile it, return low-level model. If vfs is not NULL, look up files in vfs before reading from disk. If error is not NULL, it must have size error_sz.
+  /// Parse an MJCF/URDF XML string, compile it, and return the low-level model. Any referenced
+  /// assets (meshes, textures, included files, ...) can be supplied in-memory via `assets`,
+  /// keyed by the filename used in the XML.
+  ///
+  /// In MuJoCo 3.x the virtual file system (mjVFS) is an opaque handle, so this is implemented
+  /// directly against the C VFS API (mj_defaultVFS / mj_addBufferVFS / mj_deleteVFS).
   public init(fromXML: String, assets: [String: Data]? = nil) throws {
-    var xmlString = fromXML
     let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: 256)
-    let model: UnsafeMutablePointer<mjModel>? = xmlString.withUTF8 { utf8 in
-      var vfs = assets.flatMap { MjVFS(assets: $0) } ?? MjVFS()
-      // Avoid name duplication.
-      var modelName = "model_"
-      while assets?[modelName + ".xml"] != nil {
-        modelName += "_"
+    defer { errorStr.deallocate() }
+
+    var vfs = mjVFS()
+    mj_defaultVFS(&vfs)
+    defer { mj_deleteVFS(&vfs) }
+
+    if let assets = assets {
+      for (name, data) in assets {
+        _ = data.withUnsafeBytes { raw in
+          mj_addBufferVFS(&vfs, name, raw.baseAddress, Int32(raw.count))
+        }
       }
-      vfs.makeEmptyFile(filename: "\(modelName).xml", filesize: Int32(utf8.count))
-      vfs.filedata[Int(vfs.nfile - 1)]?.assumingMemoryBound(to: UInt8.self).assign(
-        from: utf8.baseAddress!, count: utf8.count)
-      let model = mj_loadXML("model_.xml", vfs._vfs, errorStr, 256)
-      return model
+    }
+
+    // Avoid colliding with a caller-supplied asset name.
+    var modelName = "model.xml"
+    while assets?[modelName] != nil {
+      modelName = "_" + modelName
+    }
+
+    var xmlString = fromXML
+    let model: UnsafeMutablePointer<mjModel>? = xmlString.withUTF8 { utf8 in
+      _ = mj_addBufferVFS(&vfs, modelName, utf8.baseAddress, Int32(utf8.count))
+      return mj_loadXML(modelName, &vfs, errorStr, 256)
     }
     guard let model = model else {
-      let error = MjError.xml(String(cString: errorStr, encoding: .utf8))
-      errorStr.deallocate()
-      throw error
+      throw MjError.xml(String(cString: errorStr, encoding: .utf8))
     }
-    errorStr.deallocate()
     self.init(model: model)
   }
 }
@@ -106,14 +119,7 @@ extension MjModel {
   @inlinable
   public func makeData() -> MjData {
     let data = mj_makeData(_model)!
-    return MjData(
-      data: data, nq: _model.pointee.nq, nv: _model.pointee.nv, na: _model.pointee.na,
-      nu: _model.pointee.nu, nbody: _model.pointee.nbody, nmocap: _model.pointee.nmocap,
-      nuserdata: _model.pointee.nuserdata, nsensordata: _model.pointee.nsensordata,
-      njnt: _model.pointee.njnt, ngeom: _model.pointee.ngeom, nsite: _model.pointee.nsite,
-      ncam: _model.pointee.ncam, nlight: _model.pointee.nlight, ntendon: _model.pointee.ntendon,
-      nwrap: _model.pointee.nwrap, nM: _model.pointee.nM, nconmax: _model.pointee.nconmax,
-      njmax: _model.pointee.njmax, nD: _model.pointee.nD, npluginstate: _model.pointee.npluginstate)
+    return MjData(model: _model, data: data)
   }
   /// Set actuator_lengthrange for specified actuator; return 1 if ok, 0 if error.
   @inlinable

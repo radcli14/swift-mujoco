@@ -23,6 +23,12 @@ extension MjvGLCamera {
     get { _glcamera.frustum_center }
     set { _glcamera.frustum_center = newValue }
   }
+  /// width (not used for rendering)
+  @inlinable
+  public var frustumWidth: Float {
+    get { _glcamera.frustum_width }
+    set { _glcamera.frustum_width = newValue }
+  }
   /// bottom
   @inlinable
   public var frustumBottom: Float {
@@ -47,15 +53,15 @@ extension MjvGLCamera {
     get { _glcamera.frustum_far }
     set { _glcamera.frustum_far = newValue }
   }
+  /// 0: perspective; 1: orthographic
+  @inlinable
+  public var orthographic: Int32 {
+    get { _glcamera.orthographic }
+    set { _glcamera.orthographic = newValue }
+  }
 }
 extension MjvGLCamera: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "pos": pos, "forward": forward, "up": up, "frustumCenter": frustumCenter,
-        "frustumBottom": frustumBottom, "frustumTop": frustumTop, "frustumNear": frustumNear,
-        "frustumFar": frustumFar,
-      ])
+    Mirror(self, children: ["pos": pos, "forward": forward, "up": up, "frustumCenter": frustumCenter, "frustumWidth": frustumWidth, "frustumBottom": frustumBottom, "frustumTop": frustumTop, "frustumNear": frustumNear, "frustumFar": frustumFar, "orthographic": orthographic])
   }
 }

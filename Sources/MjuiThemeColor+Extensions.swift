@@ -17,6 +17,36 @@ extension MjuiThemeColor {
     get { _themecolor.secttitle }
     set { _themecolor.secttitle = newValue }
   }
+  /// section title: bottom color
+  @inlinable
+  public var secttitle2: (Float, Float, Float) {
+    get { _themecolor.secttitle2 }
+    set { _themecolor.secttitle2 = newValue }
+  }
+  /// section title with unchecked box
+  @inlinable
+  public var secttitleuncheck: (Float, Float, Float) {
+    get { _themecolor.secttitleuncheck }
+    set { _themecolor.secttitleuncheck = newValue }
+  }
+  /// section title with unchecked box: bottom color
+  @inlinable
+  public var secttitleuncheck2: (Float, Float, Float) {
+    get { _themecolor.secttitleuncheck2 }
+    set { _themecolor.secttitleuncheck2 = newValue }
+  }
+  /// section title with checked box
+  @inlinable
+  public var secttitlecheck: (Float, Float, Float) {
+    get { _themecolor.secttitlecheck }
+    set { _themecolor.secttitlecheck = newValue }
+  }
+  /// section title with checked box: bottom color
+  @inlinable
+  public var secttitlecheck2: (Float, Float, Float) {
+    get { _themecolor.secttitlecheck2 }
+    set { _themecolor.secttitlecheck2 = newValue }
+  }
   /// section font
   @inlinable
   public var sectfont: (Float, Float, Float) {
@@ -34,6 +64,18 @@ extension MjuiThemeColor {
   public var sectpane: (Float, Float, Float) {
     get { _themecolor.sectpane }
     set { _themecolor.sectpane = newValue }
+  }
+  /// separator title
+  @inlinable
+  public var separator: (Float, Float, Float) {
+    get { _themecolor.separator }
+    set { _themecolor.separator = newValue }
+  }
+  /// separator title: bottom color
+  @inlinable
+  public var separator2: (Float, Float, Float) {
+    get { _themecolor.separator2 }
+    set { _themecolor.separator2 = newValue }
   }
   /// shortcut background
   @inlinable
@@ -128,15 +170,6 @@ extension MjuiThemeColor {
 }
 extension MjuiThemeColor: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "master": master, "thumb": thumb, "secttitle": secttitle, "sectfont": sectfont,
-        "sectsymbol": sectsymbol, "sectpane": sectpane, "shortcut": shortcut,
-        "fontactive": fontactive, "fontinactive": fontinactive, "decorinactive": decorinactive,
-        "decorinactive2": decorinactive2, "button": button, "check": check, "radio": radio,
-        "select": select, "select2": select2, "slider": slider, "slider2": slider2, "edit": edit,
-        "edit2": edit2, "cursor": cursor,
-      ])
+    Mirror(self, children: ["master": master, "thumb": thumb, "secttitle": secttitle, "secttitle2": secttitle2, "secttitleuncheck": secttitleuncheck, "secttitleuncheck2": secttitleuncheck2, "secttitlecheck": secttitlecheck, "secttitlecheck2": secttitlecheck2, "sectfont": sectfont, "sectsymbol": sectsymbol, "sectpane": sectpane, "separator": separator, "separator2": separator2, "shortcut": shortcut, "fontactive": fontactive, "fontinactive": fontinactive, "decorinactive": decorinactive, "decorinactive2": decorinactive2, "button": button, "check": check, "radio": radio, "select": select, "select2": select2, "slider": slider, "slider2": slider2, "edit": edit, "edit2": edit2, "cursor": cursor])
   }
 }

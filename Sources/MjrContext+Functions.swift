@@ -6,15 +6,20 @@ extension MjrContext {
   public mutating func makeContext(model: MjModel, fontscale: MjtFontScale) {
     mjr_makeContext(model._model, self._context, fontscale.rawValue)
   }
-  ///  Change font of existing context; fontscale is mjtFontScale.
+  ///  Change font of existing context.
   @inlinable
-  public mutating func changeFont(fontscale: MjtFontScale) {
-    mjr_changeFont(fontscale.rawValue, self._context)
+  public mutating func changeFont(fontscale: Int32) {
+    mjr_changeFont(fontscale, self._context)
   }
   ///  Add Aux buffer with given index to context; free previous Aux buffer.
   @inlinable
   public mutating func addAux(index: Int32, width: Int32, height: Int32, samples: Int32) {
     mjr_addAux(index, width, height, samples, self._context)
+  }
+  ///  Resize offscreen buffers.
+  @inlinable
+  public mutating func resizeOffscreen(width: Int32, height: Int32) {
+    mjr_resizeOffscreen(width, height, self._context)
   }
   ///  Upload texture to GPU, overwriting previous upload if any.
   @inlinable
@@ -36,10 +41,10 @@ extension MjrContext {
   public func restoreBuffer() {
     mjr_restoreBuffer(self._context)
   }
-  /// Set OpenGL framebuffer for rendering: mjFB_WINDOW or mjFB_OFFSCREEN. framebuffer is mjtFramebuffer. If only one buffer is available, set that buffer and ignore framebuffer argument.
+  /// Set OpenGL framebuffer for rendering: mjFB_WINDOW or mjFB_OFFSCREEN. If only one buffer is available, set that buffer and ignore framebuffer argument.
   @inlinable
-  public mutating func setBuffer(framebuffer: MjtFramebuffer) {
-    mjr_setBuffer(framebuffer.rawValue, self._context)
+  public mutating func setBuffer(framebuffer: Int32) {
+    mjr_setBuffer(framebuffer, self._context)
   }
   /// Blit from src viewpoint in current framebuffer to dst viewport in other framebuffer. If src, dst have different size and flg_depth==0, color is interpolated with GL_LINEAR.
   @inlinable
@@ -63,9 +68,7 @@ extension MjrContext {
   }
   ///  Draw text overlay; font is mjtFont; gridpos is mjtGridPos.
   @inlinable
-  public func overlay(
-    font: MjtFont, gridpos: MjtGridPos, viewport: MjrRect, overlay: String, overlay2: String
-  ) {
+  public func overlay(font: MjtFont, gridpos: MjtGridPos, viewport: MjrRect, overlay: String, overlay2: String) {
     mjr_overlay(font.rawValue, gridpos.rawValue, viewport, overlay, overlay2, self._context)
   }
   ///  Get maximum viewport for active buffer.
@@ -73,13 +76,10 @@ extension MjrContext {
   public func maxViewport() -> MjrRect {
     return mjr_maxViewport(self._context)
   }
-  ///  Draw rectangle with centered text. font is mjtFont.
+  ///  Draw rectangle with centered text.
   @inlinable
-  public func label(
-    viewport: MjrRect, font: MjtFont, txt: String, r: Float, g: Float, b: Float, a: Float,
-    rt: Float, gt: Float, bt: Float
-  ) {
-    mjr_label(viewport, font.rawValue, txt, r, g, b, a, rt, gt, bt, self._context)
+  public func label(viewport: MjrRect, font: Int32, txt: String, r: Float, g: Float, b: Float, a: Float, rt: Float, gt: Float, bt: Float) {
+    mjr_label(viewport, font, txt, r, g, b, a, rt, gt, bt, self._context)
   }
   ///  Draw 2D figure.
   @inlinable

@@ -86,18 +86,9 @@ extension MjvFigure {
   /// line colors
   @inlinable
   public var linergb: MjArray<(Float, Float, Float)> {
-    get {
-      MjArray<(Float, Float, Float)>(
-        array: withUnsafeMutablePointer(
-          to: &_figure.pointee.linergb,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: (Float, Float, Float).self) }),
-        object: _storage, len: 100)
-    }
+    get { MjArray<(Float, Float, Float)>(array: withUnsafeMutablePointer(to: &_figure.pointee.linergb, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: (Float, Float, Float).self) }), object: _storage, len: 100) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<(Float, Float, Float)> =
-        withUnsafeMutablePointer(
-          to: &_figure.pointee.linergb,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: (Float, Float, Float).self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<(Float, Float, Float)> = withUnsafeMutablePointer(to: &_figure.pointee.linergb, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: (Float, Float, Float).self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(100))
     }
@@ -105,17 +96,9 @@ extension MjvFigure {
   /// axis ranges; (min>=max) automatic
   @inlinable
   public var range: MjArray<(Float, Float)> {
-    get {
-      MjArray<(Float, Float)>(
-        array: withUnsafeMutablePointer(
-          to: &_figure.pointee.range,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: (Float, Float).self) }),
-        object: _storage, len: 2)
-    }
+    get { MjArray<(Float, Float)>(array: withUnsafeMutablePointer(to: &_figure.pointee.range, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: (Float, Float).self) }), object: _storage, len: 2) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<(Float, Float)> = withUnsafeMutablePointer(
-        to: &_figure.pointee.range,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: (Float, Float).self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<(Float, Float)> = withUnsafeMutablePointer(to: &_figure.pointee.range, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: (Float, Float).self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(2))
     }
@@ -125,9 +108,7 @@ extension MjvFigure {
   public var xformat: String {
     get {
       var value = _figure.pointee.xformat
-      return withUnsafePointer(to: &value) {
-        String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)!
-      }
+      return withUnsafePointer(to: &value) { String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)! }
     }
     set {
       var value = newValue
@@ -148,9 +129,7 @@ extension MjvFigure {
   public var yformat: String {
     get {
       var value = _figure.pointee.yformat
-      return withUnsafePointer(to: &value) {
-        String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)!
-      }
+      return withUnsafePointer(to: &value) { String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)! }
     }
     set {
       var value = newValue
@@ -171,9 +150,7 @@ extension MjvFigure {
   public var minwidth: String {
     get {
       var value = _figure.pointee.minwidth
-      return withUnsafePointer(to: &value) {
-        String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)!
-      }
+      return withUnsafePointer(to: &value) { String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)! }
     }
     set {
       var value = newValue
@@ -194,9 +171,7 @@ extension MjvFigure {
   public var title: String {
     get {
       var value = _figure.pointee.title
-      return withUnsafePointer(to: &value) {
-        String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)!
-      }
+      return withUnsafePointer(to: &value) { String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)! }
     }
     set {
       var value = newValue
@@ -217,9 +192,7 @@ extension MjvFigure {
   public var xlabel: String {
     get {
       var value = _figure.pointee.xlabel
-      return withUnsafePointer(to: &value) {
-        String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)!
-      }
+      return withUnsafePointer(to: &value) { String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)! }
     }
     set {
       var value = newValue
@@ -238,17 +211,9 @@ extension MjvFigure {
   /// line names for legend
   @inlinable
   public var linename: MjStaticStringArray {
-    get {
-      MjStaticStringArray(
-        array: withUnsafeMutablePointer(
-          to: &_figure.pointee.linename,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: CChar.self) }), object: _storage,
-        len: 100, strlen: 100)
-    }
+    get { MjStaticStringArray(array: withUnsafeMutablePointer(to: &_figure.pointee.linename, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: CChar.self) }), object: _storage, len: 100, strlen: 100) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<CChar> = withUnsafeMutablePointer(
-        to: &_figure.pointee.linename,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: CChar.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<CChar> = withUnsafeMutablePointer(to: &_figure.pointee.linename, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: CChar.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(100) * 100)
     }
@@ -286,17 +251,9 @@ extension MjvFigure {
   /// number of points in line; (0) disable
   @inlinable
   public var linepnt: MjArray<Int32> {
-    get {
-      MjArray<Int32>(
-        array: withUnsafeMutablePointer(
-          to: &_figure.pointee.linepnt,
-          { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage,
-        len: 100)
-    }
+    get { MjArray<Int32>(array: withUnsafeMutablePointer(to: &_figure.pointee.linepnt, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) }), object: _storage, len: 100) }
     set {
-      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(
-        to: &_figure.pointee.linepnt,
-        { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
+      let unsafeMutablePointer: UnsafeMutablePointer<Int32> = withUnsafeMutablePointer(to: &_figure.pointee.linepnt, { UnsafeMutableRawPointer($0).assumingMemoryBound(to: Int32.self) })
       guard unsafeMutablePointer != newValue._array else { return }
       unsafeMutablePointer.assign(from: newValue._array, count: Int(100))
     }
@@ -328,19 +285,6 @@ extension MjvFigure {
 }
 extension MjvFigure: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "flgLegend": flgLegend, "flgTicklabel": flgTicklabel, "flgExtend": flgExtend,
-        "flgBarplot": flgBarplot, "flgSelection": flgSelection, "flgSymmetric": flgSymmetric,
-        "linewidth": linewidth, "gridwidth": gridwidth, "gridsize": gridsize, "gridrgb": gridrgb,
-        "figurergba": figurergba, "panergba": panergba, "legendrgba": legendrgba,
-        "textrgb": textrgb, "linergb": linergb, "range": range, "xformat": xformat,
-        "yformat": yformat, "minwidth": minwidth, "title": title, "xlabel": xlabel,
-        "linename": linename, "legendoffset": legendoffset, "subplot": subplot,
-        "highlight": highlight, "highlightid": highlightid, "selection": selection,
-        "linepnt": linepnt, "xaxispixel": xaxispixel, "yaxispixel": yaxispixel,
-        "xaxisdata": xaxisdata, "yaxisdata": yaxisdata,
-      ])
+    Mirror(self, children: ["flgLegend": flgLegend, "flgTicklabel": flgTicklabel, "flgExtend": flgExtend, "flgBarplot": flgBarplot, "flgSelection": flgSelection, "flgSymmetric": flgSymmetric, "linewidth": linewidth, "gridwidth": gridwidth, "gridsize": gridsize, "gridrgb": gridrgb, "figurergba": figurergba, "panergba": panergba, "legendrgba": legendrgba, "textrgb": textrgb, "linergb": linergb, "range": range, "xformat": xformat, "yformat": yformat, "minwidth": minwidth, "title": title, "xlabel": xlabel, "linename": linename, "legendoffset": legendoffset, "subplot": subplot, "highlight": highlight, "highlightid": highlightid, "selection": selection, "linepnt": linepnt, "xaxispixel": xaxispixel, "yaxispixel": yaxispixel, "xaxisdata": xaxisdata, "yaxisdata": yaxisdata])
   }
 }

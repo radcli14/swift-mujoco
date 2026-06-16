@@ -35,7 +35,7 @@ extension MjUI {
     get { _ui.pointee.width }
     set { _ui.pointee.width = newValue }
   }
-  /// current heigth
+  /// current height
   @inlinable
   public var height: Int32 {
     get { _ui.pointee.height }
@@ -71,6 +71,18 @@ extension MjUI {
     get { _ui.pointee.mousehelp }
     set { _ui.pointee.mousehelp = newValue }
   }
+  /// number of mouse clicks over UI
+  @inlinable
+  public var mouseclicks: Int32 {
+    get { _ui.pointee.mouseclicks }
+    set { _ui.pointee.mouseclicks = newValue }
+  }
+  /// 0: none, otherwise 1+section
+  @inlinable
+  public var mousesectcheck: Int32 {
+    get { _ui.pointee.mousesectcheck }
+    set { _ui.pointee.mousesectcheck = newValue }
+  }
   /// 0: none, otherwise 1+section
   @inlinable
   public var editsect: Int32 {
@@ -100,9 +112,7 @@ extension MjUI {
   public var edittext: String {
     get {
       var value = _ui.pointee.edittext
-      return withUnsafePointer(to: &value) {
-        String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)!
-      }
+      return withUnsafePointer(to: &value) { String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)! }
     }
     set {
       var value = newValue
@@ -127,15 +137,6 @@ extension MjUI {
 }
 extension MjUI: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "spacing": spacing, "color": color, "rectid": rectid, "auxid": auxid, "radiocol": radiocol,
-        "width": width, "height": height, "maxheight": maxheight, "scroll": scroll,
-        "mousesect": mousesect, "mouseitem": mouseitem, "mousehelp": mousehelp,
-        "editsect": editsect, "edititem": edititem, "editcursor": editcursor,
-        "editscroll": editscroll, "edittext": edittext, "nsect": nsect,
-        "predicate": predicate as Any, "editchanged": editchanged as Any, "sect": sect,
-      ])
+    Mirror(self, children: ["spacing": spacing, "color": color, "rectid": rectid, "auxid": auxid, "radiocol": radiocol, "width": width, "height": height, "maxheight": maxheight, "scroll": scroll, "mousesect": mousesect, "mouseitem": mouseitem, "mousehelp": mousehelp, "mouseclicks": mouseclicks, "mousesectcheck": mousesectcheck, "editsect": editsect, "edititem": edititem, "editcursor": editcursor, "editscroll": editscroll, "edittext": edittext, "nsect": nsect, "predicate": predicate as Any, "editchanged": editchanged as Any, "sect": sect])
   }
 }

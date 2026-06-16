@@ -1,5 +1,4 @@
 import C_mujoco
-
 extension MjVisual {
   @inlinable
   public var global: mjVisual_.__Unnamed_struct_global {
@@ -34,11 +33,6 @@ extension MjVisual {
 }
 extension MjVisual: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "global": global, "quality": quality, "headlight": headlight, "map": map, "scale": scale,
-        "rgba": rgba,
-      ])
+    Mirror(self, children: ["global": global, "quality": quality, "headlight": headlight, "map": map, "scale": scale, "rgba": rgba])
   }
 }

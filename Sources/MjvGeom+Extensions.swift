@@ -5,7 +5,7 @@ extension MjvGeom {
     get { MjtGeom(rawValue: _geom.type)! }
     set { _geom.type = newValue.rawValue }
   }
-  /// mesh, hfield or plane id; -1: none
+  /// mesh, hfield or plane id; -1: none; mesh: 2*id or 2*id+1 (hull)
   @inlinable
   public var dataid: Int32 {
     get { _geom.dataid }
@@ -29,19 +29,13 @@ extension MjvGeom {
     get { _geom.category }
     set { _geom.category = newValue }
   }
-  /// texture id; -1: no texture
+  /// material id; -1: no textured material
   @inlinable
-  public var texid: Int32 {
-    get { _geom.texid }
-    set { _geom.texid = newValue }
+  public var matid: Int32 {
+    get { _geom.matid }
+    set { _geom.matid = newValue }
   }
-  /// uniform cube mapping
-  @inlinable
-  public var texuniform: Int32 {
-    get { _geom.texuniform }
-    set { _geom.texuniform = newValue }
-  }
-  /// mesh geom has texture coordinates
+  /// mesh or flex geom has texture coordinates
   @inlinable
   public var texcoord: Int32 {
     get { _geom.texcoord }
@@ -52,12 +46,6 @@ extension MjvGeom {
   public var segid: Int32 {
     get { _geom.segid }
     set { _geom.segid = newValue }
-  }
-  /// texture repetition for 2D mapping
-  @inlinable
-  public var texrepeat: (Float, Float) {
-    get { _geom.texrepeat }
-    set { _geom.texrepeat = newValue }
   }
   /// size parameters
   @inlinable
@@ -112,9 +100,7 @@ extension MjvGeom {
   public var label: String {
     get {
       var value = _geom.label
-      return withUnsafePointer(to: &value) {
-        String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)!
-      }
+      return withUnsafePointer(to: &value) { String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)! }
     }
     set {
       var value = newValue
@@ -151,15 +137,6 @@ extension MjvGeom {
 }
 extension MjvGeom: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "type": type, "dataid": dataid, "objtype": objtype, "objid": objid, "category": category,
-        "texid": texid, "texuniform": texuniform, "texcoord": texcoord, "segid": segid,
-        "texrepeat": texrepeat, "size": size, "pos": pos, "mat": mat, "rgba": rgba,
-        "emission": emission, "specular": specular, "shininess": shininess,
-        "reflectance": reflectance, "label": label, "camdist": camdist, "modelrbound": modelrbound,
-        "transparent": transparent,
-      ])
+    Mirror(self, children: ["type": type, "dataid": dataid, "objtype": objtype, "objid": objid, "category": category, "matid": matid, "texcoord": texcoord, "segid": segid, "size": size, "pos": pos, "mat": mat, "rgba": rgba, "emission": emission, "specular": specular, "shininess": shininess, "reflectance": reflectance, "label": label, "camdist": camdist, "modelrbound": modelrbound, "transparent": transparent])
   }
 }

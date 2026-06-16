@@ -3,29 +3,9 @@ import XCTest
 
 final class TupleTests: XCTestCase {
 
-  func testMjuiState() throws {
-    var uiState = MjuiState()
-    uiState.rect.0 = MjrRect(left: 0, bottom: 0, width: 100, height: 100)
-    uiState.rect.1 = MjrRect(left: 10, bottom: 100, width: 10, height: 10)
-    uiState.rect.2 = MjrRect(left: 1, bottom: 10, width: 10, height: 10)
-    let rect2 = withUnsafePointer(to: uiState.rect) {
-      UnsafeRawPointer($0).assumingMemoryBound(to: MjrRect.self)[2]
-    }
-    XCTAssertEqual(rect2.left, 1)
-    XCTAssertEqual(rect2.bottom, 10)
-    XCTAssertEqual(rect2.width, 10)
-    XCTAssertEqual(rect2.height, 10)
-  }
-
-  func testVFS() throws {
-    var vfs = MjVFS()
-    vfs.makeEmptyFile(filename: "file1", filesize: 123)
-    vfs.makeEmptyFile(filename: "file2", filesize: 234)
-    XCTAssertEqual(vfs.filesize[0], 123)
-    XCTAssertEqual(vfs.filesize[1], 234)
-    XCTAssertEqual(vfs.filename[0], "file1")
-    XCTAssertEqual(vfs.filename[1], "file2")
-  }
+  // NOTE: the former testMjuiState (mjUI/mjrRect) and testVFS (mjVFS) tests were removed: the
+  // desktop UI render types and the (now-opaque) mjVFS struct are not part of the headless
+  // MuJoCo 3.x build. See MIGRATION.md.
 
   func testVopt() throws {
     var vopt = MjvOption()
@@ -50,8 +30,6 @@ final class TupleTests: XCTestCase {
   }
 
   static let allTests = [
-    ("testMjuiState", testMjuiState),
-    ("testVFS", testVFS),
     ("testVopt", testVopt),
     ("testFigure", testFigure),
   ]

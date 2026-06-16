@@ -10,9 +10,7 @@ extension MjuiDef {
   public var name: String {
     get {
       var value = _def.name
-      return withUnsafePointer(to: &value) {
-        String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)!
-      }
+      return withUnsafePointer(to: &value) { String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)! }
     }
     set {
       var value = newValue
@@ -39,9 +37,7 @@ extension MjuiDef {
   public var other: String {
     get {
       var value = _def.other
-      return withUnsafePointer(to: &value) {
-        String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)!
-      }
+      return withUnsafePointer(to: &value) { String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)! }
     }
     set {
       var value = newValue
@@ -57,11 +53,15 @@ extension MjuiDef {
       }
     }
   }
+  /// int with type-specific properties
+  @inlinable
+  public var otherint: Int32 {
+    get { _def.otherint }
+    set { _def.otherint = newValue }
+  }
 }
 extension MjuiDef: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: ["type": type, "name": name, "state": state, "other": other, "pdata": pdata as Any])
+    Mirror(self, children: ["type": type, "name": name, "state": state, "other": other, "otherint": otherint, "pdata": pdata as Any])
   }
 }

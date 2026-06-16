@@ -18,10 +18,17 @@
     "MjtPertBit",
     "MjtCatBit",
   ])
+  // Enums that cannot be represented as a Swift enum and are skipped. mjtState is a state-spec
+  // bitfield whose members are multi-line composites of other constants (e.g.
+  // `mjSTATE_PHYSICS = mjSTATE_QPOS | ...`); the line-based parser cannot represent it.
+  let enumDeny: Set<String> = Set([
+    "MjtState"
+  ])
   for thisEnum in enums {
     let swiftName_ =
       "Mjt" + thisEnum.name.suffix(from: thisEnum.name.index(thisEnum.name.startIndex, offsetBy: 3))
     let swiftName = swiftName_.prefix(upTo: swiftName_.index(swiftName_.endIndex, offsetBy: -1))
+    guard !enumDeny.contains(String(swiftName)) else { continue }
     wrappedMjEnums.insert(String(swiftName))
     if optionSets.contains(String(swiftName)) {
       mjtCode += optionSet(thisEnum)
@@ -106,8 +113,11 @@
       let code = structExtension(
         thisStruct, definedConstants: definedConstants, wrappedMjEnums: wrappedMjEnums,
         optionSets: optionSets,
-        suffix: ".pointee", deny: ["buffer", "arena"],
-        staticArrayAsDynamic: ["warning", "timer", "solver"],
+        // maxuse_threadstack is an mjtSize[mjMAXTHREAD] diagnostic array; we do not generate a
+        // 64-bit-tuple accessor for it. `solver` became a 2-D mjSolverStat array in 3.x and is
+        // likewise skipped.
+        suffix: ".pointee", deny: ["buffer", "arena", "maxuse_threadstack", "solver"],
+        staticArrayAsDynamic: ["warning", "timer"],
         boundingObject: "_storage")
       try! code.write(
         to: URL(fileURLWithPath: WorkDir).appendingPathComponent("MjData+Extensions.swift"),
@@ -261,6 +271,19 @@
   // ----- Generate code for functions -----
 
   let FunctionDeny: Set<String> = Set([
+    // mjd_inverseFD takes many mjtNum* output matrices; the generator mis-wraps these as scalars.
+    // Not part of the supported headless API surface; skipped.
+    "mjd_inverseFD",
+    // Variadic (printf-style) C functions cannot be imported into Swift.
+    "mju_error",
+    "mju_warning",
+    // Returns a bare mjData* with no originating model; cannot build our model-borrowing MjData.
+    "mjv_copyData",
+    // Stack allocators return raw mjtNum*/int* buffers; wrapped manually in MjData (stackAlloc).
+    "mj_stackAllocNum",
+    "mj_stackAllocInt",
+    // Returns mjtNum* into a history buffer; the generator mis-types the return as a scalar.
+    "mj_readSensor",
     // Implemented manually.
     "mj_defaultVFS",
     "mj_addFileVFS",

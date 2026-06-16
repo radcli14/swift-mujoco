@@ -10,9 +10,7 @@ extension MjuiItem {
   public var name: String {
     get {
       var value = _item.pointee.name
-      return withUnsafePointer(to: &value) {
-        String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)!
-      }
+      return withUnsafePointer(to: &value) { String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)! }
     }
     set {
       var value = newValue
@@ -46,21 +44,27 @@ extension MjuiItem {
     get { _item.pointee.itemid }
     set { _item.pointee.itemid = newValue }
   }
+  /// user-supplied id (for event handling)
+  @inlinable
+  public var userid: Int32 {
+    get { _item.pointee.userid }
+    set { _item.pointee.userid = newValue }
+  }
   /// rectangle occupied by item
   @inlinable
   public var rect: MjrRect {
     get { _item.pointee.rect }
     set { _item.pointee.rect = newValue }
   }
+  /// item skipped due to closed separator
+  @inlinable
+  public var skip: Int32 {
+    get { _item.pointee.skip }
+    set { _item.pointee.skip = newValue }
+  }
 }
 extension MjuiItem: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "type": type, "name": name, "state": state, "sectionid": sectionid, "itemid": itemid,
-        "rect": rect, "pdata": pdata as Any, "single": single, "multi": multi, "slider": slider,
-        "edit": edit,
-      ])
+    Mirror(self, children: ["type": type, "name": name, "state": state, "sectionid": sectionid, "itemid": itemid, "userid": userid, "rect": rect, "skip": skip, "pdata": pdata as Any, "single": single, "multi": multi, "slider": slider, "edit": edit])
   }
 }

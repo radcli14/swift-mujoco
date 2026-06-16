@@ -5,12 +5,6 @@ extension MjOption {
     get { _option.timestep }
     set { _option.timestep = newValue }
   }
-  /// update rate for remote API (Hz)
-  @inlinable
-  public var apirate: Double {
-    get { _option.apirate }
-    set { _option.apirate = newValue }
-  }
   /// ratio of friction-to-normal contact impedance
   @inlinable
   public var impratio: Double {
@@ -23,17 +17,29 @@ extension MjOption {
     get { _option.tolerance }
     set { _option.tolerance = newValue }
   }
+  /// CG/Newton linesearch tolerance
+  @inlinable
+  public var lsTolerance: Double {
+    get { _option.ls_tolerance }
+    set { _option.ls_tolerance = newValue }
+  }
   /// noslip solver tolerance
   @inlinable
   public var noslipTolerance: Double {
     get { _option.noslip_tolerance }
     set { _option.noslip_tolerance = newValue }
   }
-  /// MPR solver tolerance
+  /// convex collision solver tolerance
   @inlinable
-  public var mprTolerance: Double {
-    get { _option.mpr_tolerance }
-    set { _option.mpr_tolerance = newValue }
+  public var ccdTolerance: Double {
+    get { _option.ccd_tolerance }
+    set { _option.ccd_tolerance = newValue }
+  }
+  /// sleep velocity tolerance
+  @inlinable
+  public var sleepTolerance: Double {
+    get { _option.sleep_tolerance }
+    set { _option.sleep_tolerance = newValue }
   }
   /// gravitational acceleration
   @inlinable
@@ -83,17 +89,17 @@ extension MjOption {
     get { _option.o_solimp }
     set { _option.o_solimp = newValue }
   }
+  /// friction
+  @inlinable
+  public var oFriction: (Double, Double, Double, Double, Double) {
+    get { _option.o_friction }
+    set { _option.o_friction = newValue }
+  }
   /// integration mode (mjtIntegrator)
   @inlinable
   public var integrator: MjtIntegrator {
     get { MjtIntegrator(rawValue: _option.integrator)! }
     set { _option.integrator = newValue.rawValue }
-  }
-  /// collision mode (mjtCollision)
-  @inlinable
-  public var collision: MjtCollision {
-    get { MjtCollision(rawValue: _option.collision)! }
-    set { _option.collision = newValue.rawValue }
   }
   /// type of friction cone (mjtCone)
   @inlinable
@@ -119,43 +125,57 @@ extension MjOption {
     get { _option.iterations }
     set { _option.iterations = newValue }
   }
+  /// maximum number of CG/Newton linesearch iterations
+  @inlinable
+  public var lsIterations: Int32 {
+    get { _option.ls_iterations }
+    set { _option.ls_iterations = newValue }
+  }
   /// maximum number of noslip solver iterations
   @inlinable
   public var noslipIterations: Int32 {
     get { _option.noslip_iterations }
     set { _option.noslip_iterations = newValue }
   }
-  /// maximum number of MPR solver iterations
+  /// maximum number of convex collision solver iterations
   @inlinable
-  public var mprIterations: Int32 {
-    get { _option.mpr_iterations }
-    set { _option.mpr_iterations = newValue }
+  public var ccdIterations: Int32 {
+    get { _option.ccd_iterations }
+    set { _option.ccd_iterations = newValue }
   }
-  /// bit flags for disabling standard features (mjtDisableBit)
+  /// bit flags for disabling standard features
   @inlinable
-  public var disableflags: MjtDisableBit {
-    get { MjtDisableBit(rawValue: _option.disableflags) }
-    set { _option.disableflags = newValue.rawValue }
+  public var disableflags: Int32 {
+    get { _option.disableflags }
+    set { _option.disableflags = newValue }
   }
-  /// bit flags for enabling optional features (mjtEnableBit)
+  /// bit flags for enabling optional features
   @inlinable
-  public var enableflags: MjtEnableBit {
-    get { MjtEnableBit(rawValue: _option.enableflags) }
-    set { _option.enableflags = newValue.rawValue }
+  public var enableflags: Int32 {
+    get { _option.enableflags }
+    set { _option.enableflags = newValue }
+  }
+  /// bit flags for disabling actuators by group id
+  @inlinable
+  public var disableactuator: Int32 {
+    get { _option.disableactuator }
+    set { _option.disableactuator = newValue }
+  }
+  /// number of starting points for gradient descent
+  @inlinable
+  public var sdfInitpoints: Int32 {
+    get { _option.sdf_initpoints }
+    set { _option.sdf_initpoints = newValue }
+  }
+  /// max number of iterations for gradient descent
+  @inlinable
+  public var sdfIterations: Int32 {
+    get { _option.sdf_iterations }
+    set { _option.sdf_iterations = newValue }
   }
 }
 extension MjOption: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "timestep": timestep, "apirate": apirate, "impratio": impratio, "tolerance": tolerance,
-        "noslipTolerance": noslipTolerance, "mprTolerance": mprTolerance, "gravity": gravity,
-        "wind": wind, "magnetic": magnetic, "density": density, "viscosity": viscosity,
-        "oMargin": oMargin, "oSolref": oSolref, "oSolimp": oSolimp, "integrator": integrator,
-        "collision": collision, "cone": cone, "jacobian": jacobian, "solver": solver,
-        "iterations": iterations, "noslipIterations": noslipIterations,
-        "mprIterations": mprIterations, "disableflags": disableflags, "enableflags": enableflags,
-      ])
+    Mirror(self, children: ["timestep": timestep, "impratio": impratio, "tolerance": tolerance, "lsTolerance": lsTolerance, "noslipTolerance": noslipTolerance, "ccdTolerance": ccdTolerance, "sleepTolerance": sleepTolerance, "gravity": gravity, "wind": wind, "magnetic": magnetic, "density": density, "viscosity": viscosity, "oMargin": oMargin, "oSolref": oSolref, "oSolimp": oSolimp, "oFriction": oFriction, "integrator": integrator, "cone": cone, "jacobian": jacobian, "solver": solver, "iterations": iterations, "lsIterations": lsIterations, "noslipIterations": noslipIterations, "ccdIterations": ccdIterations, "disableflags": disableflags, "enableflags": enableflags, "disableactuator": disableactuator, "sdfInitpoints": sdfInitpoints, "sdfIterations": sdfIterations])
   }
 }

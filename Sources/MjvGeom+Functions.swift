@@ -1,12 +1,9 @@
 import C_mujoco
 
 extension MjvGeom {
-  /// Initialize given geom fields when not NULL, set the rest to their default values. type is mjtGeom.
+  /// Initialize given geom fields when not NULL, set the rest to their default values. Nullable: size, pos, mat, rgba
   @inlinable
-  public mutating func initGeom(
-    type: MjtGeom, size: MjDoubleBufferPointer, pos: MjDoubleBufferPointer,
-    mat: MjDoubleBufferPointer, rgba: MjFloatBufferPointer
-  ) {
+  public mutating func initGeom(type: Int32, size: MjDoubleBufferPointer, pos: MjDoubleBufferPointer, mat: MjDoubleBufferPointer, rgba: MjFloatBufferPointer) {
     precondition(size.count == 3)
     size.withUnsafeBufferPointer { size__p in
       precondition(pos.count == 3)
@@ -15,20 +12,21 @@ extension MjvGeom {
         mat.withUnsafeBufferPointer { mat__p in
           precondition(rgba.count == 4)
           rgba.withUnsafeBufferPointer { rgba__p in
-            mjv_initGeom(
-              &self._geom, type.rawValue, size__p.baseAddress, pos__p.baseAddress,
-              mat__p.baseAddress, rgba__p.baseAddress)
+            mjv_initGeom(&self._geom, type, size__p.baseAddress, pos__p.baseAddress, mat__p.baseAddress, rgba__p.baseAddress)
           }
         }
       }
     }
   }
-  /// Set (type, size, pos, mat) for connector-type geom between given points. Assume that mjv_initGeom was already called to set all other properties. type is mjtGeom.
+  /// Set (type, size, pos, mat) for connector-type geom between given points. Assume that mjv_initGeom was already called to set all other properties. Width of mjGEOM_LINE is denominated in pixels.
   @inlinable
-  public mutating func makeConnector(
-    type: MjtGeom, width: Double, a0: Double, a1: Double, a2: Double, b0: Double, b1: Double,
-    b2: Double
-  ) {
-    mjv_makeConnector(&self._geom, type.rawValue, width, a0, a1, a2, b0, b1, b2)
+  public mutating func connector(type: Int32, width: Double, from: MjDoubleBufferPointer, to: MjDoubleBufferPointer) {
+    precondition(from.count == 3)
+    from.withUnsafeBufferPointer { from__p in
+      precondition(to.count == 3)
+      to.withUnsafeBufferPointer { to__p in
+        mjv_connector(&self._geom, type, width, from__p.baseAddress, to__p.baseAddress)
+      }
+    }
   }
 }

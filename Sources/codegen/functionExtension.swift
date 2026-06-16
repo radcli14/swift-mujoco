@@ -26,31 +26,22 @@ enum MjType {
   case alias
 }
 
+// NOTE: the desktop OpenGL render context (MjrContext/MjrRect) and the `ui` widget toolkit
+// (MjUI / Mjui*) are intentionally absent: they are not part of the headless build, so we neither
+// generate MjObject conformances nor function wrappers that reference them.
 let MjTypes: [String: MjType] = [
   "MjContact": .value,
   "MjData": .ref,
   "MjLROpt": .value,
   "MjModel": .ref,
   "MjOption": .value,
-  "MjrContext": .ref,
-  "MjrRect": .alias,
   "MjSolverStat": .alias,
   "MjStatistic": .alias,
   "MjTimerStat": .alias,
-  "MjuiDef": .value,
-  "MjuiItemEdit": .ref,
-  "MjuiItemMulti": .ref,
-  "MjuiItemSingle": .ref,
-  "MjuiItemSlider": .ref,
-  "MjuiItem": .ref,
-  "MjuiSection": .ref,
-  "MjuiState": .value,
-  "MjUI": .ref,
-  "MjuiThemeColor": .value,
-  "MjuiThemeSpacing": .value,
+  // NOTE: MjVFS (virtual file system) is omitted: mjVFS became an opaque handle in MuJoCo 3.x
+  // (struct { void* impl_; }), so its old field-based binding no longer applies.
   "MjvCamera": .value,
   "MjvFigure": .ref,
-  "MjVFS": .ref,
   "MjvGeom": .value,
   "MjvGLCamera": .value,
   "MjVisual": .value,
@@ -281,6 +272,30 @@ func varName(_ name: String) -> String {
 public func functionExtension(
   _ apiDefinition: APIDefinition, deny: [String] = [], nameMapping: [String: [String]] = [:]
 ) -> (mainType: String?, sourceCode: String) {
+  // Skip any function that references an Mj struct type we do not wrap. This covers the new
+  // MuJoCo 3.x types that are declared in mujoco.h but have no Swift binding yet (the mjSpec /
+  // mjs* model-editing API, mjThreadPool, mjvSceneState, mjString/mjByteVec, ...). Such
+  // functions are simply not generated; if needed they are wrapped by hand.
+  for ty in apiDefinition.parameters.map({ $0.type }) + [apiDefinition.returnType] {
+    let naked = ty.split(separator: " ").last.map(String.init) ?? ty
+    let stripped = naked.replacingOccurrences(of: "*", with: "").trimmingCharacters(
+      in: .whitespaces)
+    // `void*` / `const void*` buffer parameters are surfaced as an MjVoid(Mutable)BufferPointer
+    // protocol that this binding does not define; skip such functions (raw-buffer model load/save).
+    if stripped == "void" && ty.contains("*") {
+      FileHandle.standardError.write(
+        "SKIP FUNC (void* buffer): \(apiDefinition.name)\n".data(using: .utf8)!)
+      return (nil, "")
+    }
+    if stripped.hasPrefix("mj") && !stripped.hasPrefix("mjt") {
+      let swiftName = stripped.prefix(1).uppercased() + stripped.dropFirst()
+      if MjTypes[swiftName] == nil {
+        FileHandle.standardError.write(
+          "SKIP FUNC (unsupported type \(stripped)): \(apiDefinition.name)\n".data(using: .utf8)!)
+        return (nil, "")
+      }
+    }
+  }
   // First, identify primary owner of the function.
   // Rule:
   // 1. Only look at first or last parameter (excluding mjt* or ordinary C types) as the primary owner, if cannot find any, fatal.

@@ -4,9 +4,7 @@ extension MjuiSection {
   public var name: String {
     get {
       var value = _section.pointee.name
-      return withUnsafePointer(to: &value) {
-        String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)!
-      }
+      return withUnsafePointer(to: &value) { String(cString: UnsafeRawPointer($0).assumingMemoryBound(to: CChar.self), encoding: .utf8)! }
     }
     set {
       var value = newValue
@@ -22,11 +20,11 @@ extension MjuiSection {
       }
     }
   }
-  /// 0: closed, 1: open
+  /// section state (mjtSection)
   @inlinable
-  public var state: Int32 {
-    get { _section.pointee.state }
-    set { _section.pointee.state = newValue }
+  public var state: MjtSection {
+    get { MjtSection(rawValue: _section.pointee.state)! }
+    set { _section.pointee.state = newValue.rawValue }
   }
   /// 0: none, 1: control, 2: shift; 4: alt
   @inlinable
@@ -39,6 +37,12 @@ extension MjuiSection {
   public var shortcut: Int32 {
     get { _section.pointee.shortcut }
     set { _section.pointee.shortcut = newValue }
+  }
+  /// 0: none, 1: unchecked, 2: checked
+  @inlinable
+  public var checkbox: Int32 {
+    get { _section.pointee.checkbox }
+    set { _section.pointee.checkbox = newValue }
   }
   /// number of items in use
   @inlinable
@@ -58,14 +62,15 @@ extension MjuiSection {
     get { _section.pointee.rcontent }
     set { _section.pointee.rcontent = newValue }
   }
+  /// last mouse click over this section
+  @inlinable
+  public var lastclick: Int32 {
+    get { _section.pointee.lastclick }
+    set { _section.pointee.lastclick = newValue }
+  }
 }
 extension MjuiSection: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "name": name, "state": state, "modifier": modifier, "shortcut": shortcut, "nitem": nitem,
-        "rtitle": rtitle, "rcontent": rcontent, "item": item,
-      ])
+    Mirror(self, children: ["name": name, "state": state, "modifier": modifier, "shortcut": shortcut, "checkbox": checkbox, "nitem": nitem, "rtitle": rtitle, "rcontent": rcontent, "lastclick": lastclick, "item": item])
   }
 }

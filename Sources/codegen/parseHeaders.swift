@@ -63,7 +63,9 @@ public func parseMuJoCoHeaders(from filePaths: [String]) -> (
         for parameter in separatedParameters {
           let trimmed = parameter.trimmingCharacters(in: .whitespaces)
           guard trimmed != "void" else { continue }
-          let typeSeparator = trimmed.lastIndex(where: { $0 == " " || $0 == "*" })!
+          guard let typeSeparator = trimmed.lastIndex(where: { $0 == " " || $0 == "*" }) else {
+            continue
+          }
           let type = trimmed.prefix(upTo: typeSeparator).trimmingCharacters(in: .whitespaces)
           let name = trimmed.suffix(from: trimmed.index(typeSeparator, offsetBy: 1))
             .trimmingCharacters(in: .whitespaces)
@@ -81,7 +83,9 @@ public func parseMuJoCoHeaders(from filePaths: [String]) -> (
         for parameter in separatedParameters {
           let trimmed = parameter.trimmingCharacters(in: .whitespaces)
           guard trimmed != "void" else { continue }
-          let typeSeparator = trimmed.lastIndex(where: { $0 == " " || $0 == "*" })!
+          guard let typeSeparator = trimmed.lastIndex(where: { $0 == " " || $0 == "*" }) else {
+            continue
+          }
           let type = trimmed.prefix(upTo: typeSeparator).trimmingCharacters(in: .whitespaces)
           let name = trimmed.suffix(from: trimmed.index(typeSeparator, offsetBy: 1))
             .trimmingCharacters(in: .whitespaces)
