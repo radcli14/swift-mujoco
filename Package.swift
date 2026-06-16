@@ -162,7 +162,9 @@ let package = Package(
       ]),
     .testTarget(
       name: "Tests",
-      dependencies: ["MuJoCo"],
+      // C_mujoco is a direct dependency so tests can exercise the raw 3.x MjSpec / mjs_* model
+      // editing + attachment C API (which is not yet surfaced through the Swift bindings).
+      dependencies: ["MuJoCo", "C_mujoco"],
       path: "Tests",
       exclude: ["main.swift", "BUILD.bazel"]),
   ],
