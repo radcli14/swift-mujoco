@@ -8,6 +8,16 @@
 
 This is a Swift binding for [MuJoCo](https://mujoco.org) physics simulation library.
 
+> **`radcli14` fork — MuJoCo 3.9.0 (headless), Apple platforms.**
+> This fork upgrades the bundled MuJoCo C library from 2.3.0 to **3.9.0**, which adds the
+> `MjSpec` / `mjs_*` runtime model-editing API and the MJCF `<attach model= prefix=>` + `<frame>`
+> elements for composing multi-robot scenes. The MuJoCo 3.9.0 sources are vendored in-repo under
+> [`CMujoco/`](CMujoco) (no external `liuliu/mujoco` dependency). The build is **headless** — the
+> physics engine, model compiler and model-editing API only; the desktop OpenGL renderer, UI
+> toolkit and `simulate` app are not compiled, so it builds for **macOS, iOS (device + simulator)
+> and visionOS**. See **[MIGRATION.md](MIGRATION.md)** for the full API delta and the supported
+> subset.
+
 [MuJoCo](https://mujoco.org) is a very accurate CPU-based physics simulation library. Since its acquisition by [DeepMind](https://github.com/deepmind/mujoco), MuJoCo has been more readily available broadly.
 
 MuJoCo is at the heart of physics simulation in the realm of [deep reinforcement learning](https://spinningup.openai.com/en/latest/algorithms/ppo.html). In [OpenAI Gym](https://www.gymlibrary.ml/environments/mujoco/), there are many diverse environments simulated with MuJoCo.
