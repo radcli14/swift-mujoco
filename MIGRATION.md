@@ -96,6 +96,13 @@ mj_name2id(m, Int32(mjOBJ_BODY.rawValue), "robot1_link")  // >= 0: namespaced bo
 Equivalent pure-MJCF works too, using `<frame pos quat>` + `<attach model= prefix=>` once the
 child spec has been registered in the parent.
 
+**Wrapped public Swift API (preferred):** `import MuJoCo` now exposes `MjSceneComposer.composeMJCF([MjSceneInstance])`,
+which composes several prefixed, posed child models (URDF/MJCF) into one combined MJCF **string**
+via `mjs_attach` — keeping all raw `mjs_*` pointer work inside the package. (It compiles the
+combined spec with a `nil` VFS in order to serialize it, so external mesh files referenced by a
+child must be resolvable on disk at compose time; the returned MJCF is re-loaded later by the
+caller.) See `Tests/compose.swift`.
+
 ## Mesh-file decoders (OBJ / STL) — enabled
 
 Models that reference external `.obj` / `.stl` mesh files **do** compile. In MuJoCo 3.x mesh
