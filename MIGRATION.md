@@ -96,14 +96,31 @@ mj_name2id(m, Int32(mjOBJ_BODY.rawValue), "robot1_link")  // >= 0: namespaced bo
 Equivalent pure-MJCF works too, using `<frame pos quat>` + `<attach model= prefix=>` once the
 child spec has been registered in the parent.
 
+## Mesh-file decoders (OBJ / STL) — enabled
+
+Models that reference external `.obj` / `.stl` mesh files **do** compile. In MuJoCo 3.x mesh
+loading moved into the `obj_decoder` / `stl_decoder` plugins, which self-register via C++ static
+constructors — unreliable inside a SwiftPM **static** archive, where the linker may drop a
+translation unit whose only effect is a constructor. To make this deterministic:
+
+* both decoder plugins are vendored (`CMujoco/plugin/{obj,stl}_decoder`) and compiled into
+  `C_mujoco` (OBJ uses a header-only `tinyobjloader` under `CMujoco/external/tinyobjloader`);
+* each exposes an explicit `extern "C"` registration entry point, aggregated by CShim's
+  `mj_registerBuiltinDecoders()`, which the Swift bindings call **once, lazily, before the first
+  model is loaded** (`MjModel` loaders) — registration does not depend on static constructors
+  running. Registration is dedup-safe (`mjp_registerDecoder` uses `AppendIfUnique`), so the
+  constructors are also kept as a harmless fallback for direct C use.
+
+Verified at runtime on **macOS arm64 and the iOS Simulator (arm64)** — `Tests/mesh.swift` loads
+both a binary-STL and an OBJ tetrahedron through `MjModel(fromXML:assets:)`.
+
+`.msh` (MuJoCo's own binary mesh format) is handled by the core model compiler (not a decoder
+plugin) and works as well.
+
 ## Known limitations / not-yet-ported (the supported subset)
 
-* **First-party plugins are not compiled** (elasticity, actuator, sensor, sdf). Models that rely
-  on these plugins will not find them.
-* **Mesh-file decoders (OBJ/STL) are not compiled.** In MuJoCo 3.x, mesh loading moved to the
-  `obj_decoder` / `stl_decoder` plugins (which self-register via static constructors — fragile
-  inside a SwiftPM static archive). Models with **inline** geoms work; models that reference
-  external `.obj` / `.stl` mesh files will fail to load until these decoders are enabled. This is
-  the most likely follow-up needed for ARMOR; it was left out rather than silently stubbed.
+* **First-party compute plugins are not compiled** (elasticity, actuator, sensor, sdf). Models
+  that rely on these plugins will not find them.
+* glTF / GLB / USD meshes are not supported (MuJoCo ships no native decoder for them).
 * `src/xml/mjz` (compressed-model format) and its `miniz` dependency are not vendored.
 * Rendering, UI, and the desktop `simulate` app are not part of this headless build.

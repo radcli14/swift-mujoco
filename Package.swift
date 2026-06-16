@@ -66,6 +66,10 @@ let package = Package(
         "src/xml",
         "src/thread",
         "src/render",  // render/noop only
+        // Built-in mesh-file decoders (OBJ via tinyobjloader, STL). Registered explicitly at
+        // runtime via CShim's mj_registerBuiltinDecoders (see MjModel loaders).
+        "plugin/obj_decoder",
+        "plugin/stl_decoder",
       ],
       publicHeadersPath: "include",
       cSettings: [
@@ -126,7 +130,7 @@ let package = Package(
         "MjuiThemeSpacing.swift", "MjuiThemeSpacing+Extensions.swift",
         // mjVFS became an opaque handle in MuJoCo 3.x; the old field-based VFS binding no longer
         // applies, so it is excluded (see MIGRATION.md).
-        "MjVFS.swift", "MjVFS+Extensions.swift", "MjVFS+Functions.swift",
+        "MjVFS.swift", "MjVFS+Functions.swift",
       ]),
     .target(
       name: "ChangeCases",

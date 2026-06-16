@@ -1,10 +1,19 @@
 import C_mujoco
+import CShim_mujoco
 import Foundation
 
 public enum MjError: Error {
   case xml(String?)
   case actuator(String?)
 }
+
+// Registers MuJoCo's built-in mesh-file decoders (OBJ + STL) exactly once, the first time a model
+// is loaded, so that models referencing external .obj / .stl meshes compile. Implemented as a
+// lazily-initialized global (thread-safe, runs once); each loader touches it before loading.
+@usableFromInline
+let mjBuiltinDecodersRegistered: Void = {
+  mj_registerBuiltinDecoders()
+}()
 
 /// Protocolize internal storage for MjModel. Internal use only.
 public protocol MjModelStorage: AnyObject {
@@ -55,6 +64,7 @@ public struct MjModel {
 
   /// Load model from binary MJB file.
   public init?(fromBinaryPath filePath: String) {
+    _ = mjBuiltinDecodersRegistered
     guard let model = mj_loadModel(filePath, nil) else {
       return nil
     }
@@ -63,6 +73,7 @@ public struct MjModel {
 
   /// Parse XML file in MJCF or URDF format, compile it, return low-level model. If error is not NULL, it must have size error_sz.
   public init(fromXMLPath filePath: String) throws {
+    _ = mjBuiltinDecodersRegistered
     let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: 256)
     guard let model = mj_loadXML(filePath, nil, errorStr, 256) else {
       let error = MjError.xml(String(cString: errorStr, encoding: .utf8))
@@ -80,6 +91,7 @@ public struct MjModel {
   /// In MuJoCo 3.x the virtual file system (mjVFS) is an opaque handle, so this is implemented
   /// directly against the C VFS API (mj_defaultVFS / mj_addBufferVFS / mj_deleteVFS).
   public init(fromXML: String, assets: [String: Data]? = nil) throws {
+    _ = mjBuiltinDecodersRegistered
     let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: 256)
     defer { errorStr.deallocate() }
 
