@@ -34,4 +34,25 @@ extern void mj_registerBuiltinDecoders(void);
 // engine is C with no destructors, and its scratch space lives on `mjData`'s arena, which is
 // reset per step rather than freed — so the leak surface is bounded. It is still the reason a
 // failed call should be treated as "this model/step is unusable", not "retry and carry on".
+// ⚠️ `body` MUST be pure C. See `mj_protectedStep` below for why, and prefer a purpose-built
+// protected entry point like it over passing a Swift closure through here.
 extern int mj_protectedCall(void (*body)(void *), void *context, char *errbuf, size_t errbuf_len);
+
+// Step a model to `target_time` (or `max_steps` steps, whichever comes first) with the error
+// handler installed, returning the number of steps taken via `steps_taken`.
+//
+// WHY A DEDICATED C ENTRY POINT rather than wrapping `mj_step` in a Swift closure passed to
+// `mj_protectedCall`: the `longjmp` must never unwind a Swift frame. Swift's dynamic exclusivity
+// enforcement registers each open `inout` access in a thread-local set and removes it when the
+// accessing frame returns normally. `mj_step(m, &data)` from Swift holds exactly such an access —
+// so a `longjmp` past that frame leaves a dangling entry pointing into a dead stack frame, and the
+// NEXT exclusivity check (any later property write) dereferences it. That is not theoretical: it
+// crashed ARMOR with EXC_BAD_ACCESS on the property write immediately after the error was caught,
+// and is reproduced by `ProtectedCallExclusivityTests`.
+//
+// Keeping the whole loop in C means `setjmp` and `longjmp` both live *below* the Swift frame, so
+// no Swift frame is ever unwound and the caller's `inout` access closes normally.
+//
+// Returns 0 on success; 1 on a MuJoCo error, with the message copied into `errbuf`.
+extern int mj_protectedStep(const void *model, void *data, int max_steps, double target_time,
+                            int *steps_taken, char *errbuf, size_t errbuf_len);

@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "mujoco/mjui.h"
+#include "mujoco/mujoco.h"
 
 int offsetAnonymousUnionOfMjuiItem() {
 	return offsetof(struct mjuiItem_, single);
@@ -80,6 +81,55 @@ int mj_protectedCall(void (*body)(void *), void *context, char *errbuf, size_t e
 	mjc_active = previous_active;
 	memcpy(mjc_jump, previous_jump, sizeof(jmp_buf));
 
+	if (failed && errbuf != NULL && errbuf_len > 0) {
+		strncpy(errbuf, mjc_message, errbuf_len - 1);
+		errbuf[errbuf_len - 1] = '\0';
+	}
+	return failed;
+}
+
+int mj_protectedStep(const void *model, void *data, int max_steps, double target_time,
+                     int *steps_taken, char *errbuf, size_t errbuf_len) {
+	if (steps_taken != NULL) {
+		*steps_taken = 0;
+	}
+	if (model == NULL || data == NULL) {
+		return 0;
+	}
+
+	const mjModel *m = (const mjModel *)model;
+	mjData *d = (mjData *)data;
+
+	void (*previous_handler)(const char *) = _mjPRIVATE__get_tls_error_fn();
+	int previous_active = mjc_active;
+	jmp_buf previous_jump;
+	memcpy(previous_jump, mjc_jump, sizeof(jmp_buf));
+
+	int failed = 0;
+	int steps = 0;
+	mjc_message[0] = '\0';
+
+	if (setjmp(mjc_jump) == 0) {
+		mjc_active = 1;
+		_mjPRIVATE__set_tls_error_fn(mjc_error_handler);
+		// The entire loop is C: no Swift frame sits between this setjmp and any mjERROR raised
+		// inside mj_step, so a longjmp can never abandon one. See the header for what goes wrong
+		// when it does.
+		while (d->time < target_time && steps < max_steps) {
+			mj_step(m, d);
+			steps++;
+		}
+	} else {
+		failed = 1;
+	}
+
+	_mjPRIVATE__set_tls_error_fn(previous_handler);
+	mjc_active = previous_active;
+	memcpy(mjc_jump, previous_jump, sizeof(jmp_buf));
+
+	if (steps_taken != NULL) {
+		*steps_taken = steps;
+	}
 	if (failed && errbuf != NULL && errbuf_len > 0) {
 		strncpy(errbuf, mjc_message, errbuf_len - 1);
 		errbuf[errbuf_len - 1] = '\0';

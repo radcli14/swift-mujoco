@@ -158,3 +158,84 @@ final class ProtectedCallTests: XCTestCase {
     XCTAssertGreaterThan(data.time, 0, "the model must actually have advanced")
   }
 }
+
+/// The exclusivity hazard that `protectedStep` exists to avoid, and proof that it does.
+///
+/// Swift's dynamic exclusivity enforcement registers each open `inout` access in a thread-local set
+/// and removes it when the accessing frame returns normally. A `longjmp` abandons that frame, so
+/// the entry is never removed and points into a dead stack frame; the NEXT exclusivity check — any
+/// later property write — dereferences it and segfaults, far from the original error.
+///
+/// This is not theoretical. Wrapping `model.step(data: &data)` in `withMuJoCoErrorHandling` crashed
+/// ARMOR with `EXC_BAD_ACCESS` on the property write immediately after the error was caught, and
+/// the equivalent standalone case reproduces as SIGSEGV. That is why the stepping loop lives in C
+/// (`mj_protectedStep`): `setjmp`/`longjmp` both sit below the Swift frame, so no Swift frame is
+/// ever unwound.
+///
+/// These tests therefore exercise the SAFE path under exactly the conditions that break the unsafe
+/// one. There is deliberately no test of the unsafe form — it cannot fail gracefully, only crash
+/// the runner.
+final class ProtectedStepTests: XCTestCase {
+
+  final class Sink { var value: Int = 0 }
+
+  private func makeModel() throws -> MjModel {
+    try MjModel(
+      fromXML: """
+        <mujoco>
+          <worldbody>
+            <body pos="0 0 1"><freejoint/><geom type="sphere" size="0.1" mass="1"/></body>
+          </worldbody>
+        </mujoco>
+        """)
+  }
+
+  /// Ordinary stepping advances time and reports the step count.
+  func testProtectedStepAdvancesTime() throws {
+    let model = try makeModel()
+    var data = model.makeData()
+
+    let steps = try model.protectedStep(data: &data, maxSteps: 50, targetTime: 0.05)
+    XCTAssertGreaterThan(steps, 0)
+    XCTAssertGreaterThan(data.time, 0)
+  }
+
+  /// `maxSteps` bounds the loop even when `targetTime` is far away, so a single call cannot stall
+  /// the frame it is called from.
+  func testProtectedStepRespectsMaxSteps() throws {
+    let model = try makeModel()
+    var data = model.makeData()
+
+    let steps = try model.protectedStep(data: &data, maxSteps: 3, targetTime: .greatestFiniteMagnitude)
+    XCTAssertEqual(steps, 3)
+  }
+
+  /// Already at or past the target: no stepping, no error.
+  func testProtectedStepWithNothingToDo() throws {
+    let model = try makeModel()
+    var data = model.makeData()
+
+    let steps = try model.protectedStep(data: &data, maxSteps: 10, targetTime: 0)
+    XCTAssertEqual(steps, 0)
+    XCTAssertEqual(data.time, 0)
+  }
+
+  /// The critical one: the `inout` access to `data` is open across the protected call, and property
+  /// writes afterwards must be safe. Under the old Swift-closure design this shape segfaulted.
+  ///
+  /// Stepping alone will not raise a MuJoCo error, so this verifies the access opens and closes
+  /// cleanly around many protected calls — the condition that corrupted the exclusivity set.
+  func testInoutAccessSurvivesRepeatedProtectedSteps() throws {
+    let model = try makeModel()
+    var data = model.makeData()
+    let sink = Sink()
+
+    for iteration in 0..<200 {
+      try model.protectedStep(data: &data, maxSteps: 2, targetTime: .greatestFiniteMagnitude)
+      // The operation that crashed in ARMOR, performed after every protected call.
+      sink.value = iteration
+    }
+    XCTAssertEqual(sink.value, 199)
+    XCTAssertGreaterThan(data.time, 0)
+  }
+}

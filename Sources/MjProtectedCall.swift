@@ -38,6 +38,15 @@ private typealias MjCallBody = () -> Void
 ///   completes). A MuJoCo error raised on a thread with no protected call in progress falls back to
 ///   MuJoCo's own behaviour.
 ///
+/// - Warning: **`body` must not open a Swift exclusive (`inout`) access, and should contain as
+///   little Swift as possible.** Swift's dynamic exclusivity enforcement registers each open access
+///   in a thread-local set and removes it when the accessing frame returns normally; a `longjmp`
+///   abandons that frame, leaving a dangling entry that the NEXT exclusivity check — any later
+///   property write — dereferences, segfaulting well away from the original error. Passing
+///   `{ model.step(data: &data) }` here is exactly that trap, which is why ``MjModel/protectedStep(data:maxSteps:targetTime:)``
+///   exists and does the whole loop in C instead. `ProtectedCallExclusivityTests` demonstrates the
+///   crash. Prefer a purpose-built protected entry point over this wrapper wherever one exists.
+///
 /// - Note: Only errors routed through `mju_error` are caught. A genuine memory fault inside the
 ///   engine is still a signal and still crashes the process — this converts MuJoCo's *deliberate*
 ///   failures, which are the entire class responsible for silent app termination.
@@ -91,5 +100,48 @@ public func withMuJoCoErrorHandling<T>(_ body: @escaping () throws -> T) throws 
     // Unreachable: the shim reports failure whenever the body did not run to completion, so a
     // non-zero return is handled above and a zero return means the thunk ran and set `outcome`.
     throw MjError.engine("protected call completed without producing a result")
+  }
+}
+
+extension MjModel {
+  /// Advances the simulation toward `targetTime`, stopping after `maxSteps`, with MuJoCo's error
+  /// handler installed — so an engine failure throws ``MjError/engine(_:)`` instead of terminating
+  /// the process.
+  ///
+  /// The stepping loop runs entirely in C (`mj_protectedStep`), which is what makes this safe where
+  /// wrapping `step(data:)` in ``withMuJoCoErrorHandling(_:)`` is not: `setjmp` and `longjmp` both
+  /// live below this Swift frame, so the `inout` access to `data` is never abandoned mid-flight and
+  /// closes normally. Doing the loop in Swift instead leaves a dangling entry in Swift's
+  /// exclusivity-tracking set and segfaults on the next property write — see the warning on
+  /// ``withMuJoCoErrorHandling(_:)`` and `ProtectedCallExclusivityTests`.
+  ///
+  /// - Important: If this throws, `self` and `data` are **unusable**. MuJoCo had already declared
+  ///   its state invalid before raising; discard and reload rather than stepping again.
+  ///
+  /// - Returns: The number of steps actually taken.
+  @discardableResult
+  public func protectedStep(data: inout MjData, maxSteps: Int, targetTime: Double) throws -> Int {
+    var stepsTaken: Int32 = 0
+    var messageBuffer = [CChar](repeating: 0, count: 1024)
+
+    let failed = messageBuffer.withUnsafeMutableBufferPointer { buffer in
+      mj_protectedStep(
+        UnsafeRawPointer(self._model),
+        UnsafeMutableRawPointer(data._data),
+        Int32(maxSteps),
+        targetTime,
+        &stepsTaken,
+        buffer.baseAddress,
+        buffer.count
+      )
+    }
+
+    if failed != 0 {
+      let message = messageBuffer.withUnsafeBufferPointer { buffer in
+        buffer.baseAddress.map { String(cString: $0) } ?? ""
+      }
+      throw MjError.engine(message)
+    }
+    return Int(stepsTaken)
   }
 }
