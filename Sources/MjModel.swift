@@ -5,6 +5,14 @@ import Foundation
 public enum MjError: Error {
   case xml(String?)
   case actuator(String?)
+  /// An error raised inside MuJoCo's C engine and captured by ``withMuJoCoErrorHandling(_:)``
+  /// rather than terminating the process. The payload is MuJoCo's own message, e.g.
+  /// `"FactorizeHessian: rank-deficient sparse Hessian"`.
+  ///
+  /// Without that wrapper these are fatal: `mju_error` prints and calls `exit(EXIT_FAILURE)`,
+  /// which the host app experiences as simply vanishing — a clean exit raises no signal, so no
+  /// crash report is produced.
+  case engine(String)
 }
 
 // Registers MuJoCo's built-in mesh-file decoders (OBJ + STL) exactly once, the first time a model
