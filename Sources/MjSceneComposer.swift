@@ -49,7 +49,7 @@ public enum MjSceneComposer {
   /// - Throws: `MjError.xml` (carrying the underlying MuJoCo error text) on any parse, attach,
   ///   compile, or serialization failure.
   public static func composeMJCF(_ instances: [MjSceneInstance]) throws -> String {
-    let errSize = 1024
+    let errSize = mjErrorBufferSize
     let err = UnsafeMutablePointer<CChar>.allocate(capacity: errSize)
     defer { err.deallocate() }
     func errorText() -> String { String(cString: err) }

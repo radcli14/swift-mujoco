@@ -2,6 +2,11 @@ import C_mujoco
 import CShim_mujoco
 import Foundation
 
+/// Size of the buffer handed to MuJoCo for error text. MuJoCo caps its messages at 500 bytes
+/// (`mjCError::message`), and the trailing "Element name 'X', id N" locates the faulty element, so
+/// this must stay comfortably above that.
+@usableFromInline let mjErrorBufferSize = 1024
+
 public enum MjError: Error {
   case xml(String?)
   case actuator(String?)
@@ -82,8 +87,8 @@ public struct MjModel {
   /// Parse XML file in MJCF or URDF format, compile it, return low-level model. If error is not NULL, it must have size error_sz.
   public init(fromXMLPath filePath: String) throws {
     _ = mjBuiltinDecodersRegistered
-    let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: 256)
-    guard let model = mj_loadXML(filePath, nil, errorStr, 256) else {
+    let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: mjErrorBufferSize)
+    guard let model = mj_loadXML(filePath, nil, errorStr, Int32(mjErrorBufferSize)) else {
       let error = MjError.xml(String(cString: errorStr, encoding: .utf8))
       errorStr.deallocate()
       throw error
@@ -100,7 +105,7 @@ public struct MjModel {
   /// directly against the C VFS API (mj_defaultVFS / mj_addBufferVFS / mj_deleteVFS).
   public init(fromXML: String, assets: [String: Data]? = nil) throws {
     _ = mjBuiltinDecodersRegistered
-    let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: 256)
+    let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: mjErrorBufferSize)
     defer { errorStr.deallocate() }
 
     var vfs = mjVFS()
@@ -124,7 +129,7 @@ public struct MjModel {
     var xmlString = fromXML
     let model: UnsafeMutablePointer<mjModel>? = xmlString.withUTF8 { utf8 in
       _ = mj_addBufferVFS(&vfs, modelName, utf8.baseAddress, Int32(utf8.count))
-      return mj_loadXML(modelName, &vfs, errorStr, 256)
+      return mj_loadXML(modelName, &vfs, errorStr, Int32(mjErrorBufferSize))
     }
     guard let model = model else {
       throw MjError.xml(String(cString: errorStr, encoding: .utf8))
@@ -145,8 +150,8 @@ extension MjModel {
   @inlinable
   public func setLengthRange(data: inout MjData, index: Int32, opt: MjLROpt) throws {
     var opt__lropt = opt._lropt
-    let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: 256)
-    guard 1 == mj_setLengthRange(_model, data._data, index, &opt__lropt, errorStr, 256) else {
+    let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: mjErrorBufferSize)
+    guard 1 == mj_setLengthRange(_model, data._data, index, &opt__lropt, errorStr, Int32(mjErrorBufferSize)) else {
       let error = MjError.actuator(String(cString: errorStr, encoding: .utf8))
       errorStr.deallocate()
       throw error
@@ -156,8 +161,8 @@ extension MjModel {
   /// Update XML data structures with info from low-level model, save as MJCF. If error is not NULL, it must have size error_sz.
   @inlinable
   public func saveLastXML(filename: String) throws {
-    let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: 256)
-    guard 1 == mj_saveLastXML(filename, _model, errorStr, 256) else {
+    let errorStr = UnsafeMutablePointer<CChar>.allocate(capacity: mjErrorBufferSize)
+    guard 1 == mj_saveLastXML(filename, _model, errorStr, Int32(mjErrorBufferSize)) else {
       let error = MjError.xml(String(cString: errorStr, encoding: .utf8))
       errorStr.deallocate()
       throw error
